@@ -1,6 +1,7 @@
 import { ChangeEvent, ReactElement, useState } from "react";
 import { Status } from "../utils/interfaces";
 import { sendQuestionToOpenAI } from "../methods/sendQuestionToOpenAI";
+import Spinner from "./Spinner";
 
 export default function Input(): ReactElement {
 
@@ -8,7 +9,6 @@ export default function Input(): ReactElement {
     const [loading, setLoading] = useState<boolean>(false);
 
     async function submitPrompt(): Promise<void> {
-        console.log("called");
         if (loading) return;
         if (prompt.length < 2) {
             alert("Please enter a question.");
@@ -29,11 +29,15 @@ export default function Input(): ReactElement {
         alert("Success");
     }
 
+    function closeWindow(): void {
+        window.close();
+    }
+
     return (
         <div className="relative w-[32rem] mt-10">
             <div className="relative w-full min-w-[200px]">
                 <textarea
-                    rows={8}
+                    rows={2}
                     value={prompt}
                     onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setPrompt(e.target.value)}
                     className="peer h-full min-h-[100px] w-full !resize-none  rounded-[7px] border border-blue-gray-200 bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-gray-900 focus:border-t-transparent focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -46,15 +50,19 @@ export default function Input(): ReactElement {
             <div className="flex w-full justify-end py-1.5">
                 <div className="flex gap-2">
                     <button
+                        onClick={closeWindow}
                         className="px-4 py-2 font-sans text-xs font-bold text-center text-gray-900 uppercase align-middle transition-all rounded-md select-none hover:bg-gray-900/10 active:bg-gray-900/20 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                         type="button">
                         Close
                     </button>
                     <button
                         onClick={submitPrompt}
-                        className="select-none rounded-md bg-blue-500 py-2 px-4 text-center align-middle font-sans text-xs font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-                        type="button">
-                        Submit
+                        className="select-none rounded-md bg-blue-500 w-20 h-8 text-center align-middle flex justify-center font-sans text-xs font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                        type="button"
+                    >
+                        { loading ?
+                            <Spinner />
+                        : "Submit"}
                     </button>
                 </div>
             </div>

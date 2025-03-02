@@ -1,14 +1,15 @@
 import { ReactElement } from 'react';
 import './App.css';
 import Input from './components/Input';
+import Logo from './components/Logo';
 
 function App(): ReactElement {
   
     return (
-        <>
-            <h1>Ask the Dev</h1>
+        <div className="items-center flex flex-col">
+            <Logo />
             <Input />
-        </>
+        </div>
     );
 }
 
