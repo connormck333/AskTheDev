@@ -1,0 +1,10 @@
+{
+    "manifest_version": 3,
+    "name": "Ask The Dev",
+    "version": "1.0.0",
+    "description": "AI Chrome Extension - Ask AI questions about the webpage you are on.",
+    "action": {
+      "default_popup": "index.html"
+    },
+    "permissions": []
+}
