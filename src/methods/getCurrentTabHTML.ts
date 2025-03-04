@@ -20,8 +20,11 @@ async function getCurrentTabHTML(): Promise<Status> {
 }
 
 function removeAllTags(htmlContent: string): string {
-    const doc: Document = new DOMParser().parseFromString(htmlContent, "text/html");
-    return doc.body.textContent || "";
+    const cleanHtml: string = htmlContent.replace(/<script[^>]*>[\s\S]*?<\/script>|<style[^>]*>[\s\S]*?<\/style>/gi, "");
+    const doc: Document = new DOMParser().parseFromString(cleanHtml, "text/html");
+    const text = doc.body.textContent || "";
+
+    return text.replace(/\s+/g, " ").trim();
 }
 
 export {
