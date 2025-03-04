@@ -1,7 +1,7 @@
 import { ChatCompletion } from "openai/resources/index.mjs";
 import { Status } from "../utils/interfaces";
 import { openai } from "./OpenAi";
-import { getCurrentTabHTML } from "./getCurrentTabHTML";
+// import { getCurrentTabHTML } from "./getCurrentTabHTML";
 
 async function sendQuestionToOpenAI(prompt: string): Promise<Status> {
     // const tabTextContent = await getCurrentTabHTML();

@@ -31,6 +31,7 @@ export default function Input(props: InputProps): ReactElement {
         });
 
         setChatStream([...savedStream]);
+        setPrompt("");
 
         setLoading(true);
 

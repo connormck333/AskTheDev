@@ -13,13 +13,13 @@ function App(): ReactElement {
   
     return (
         <div className="items-center flex flex-col">
-            <div className="overflow-scroll" style={{height: "70vh"}}>
+            <div className="overflow-scroll flex flex-col items-center h-[70vh] min-w-[50vw]">
                 <Logo />
                 <ChatStream
                     stream={[chatStream, setChatStream]}
                 />
             </div>
-            <div style={{height: "30vh"}}>
+            <div>
                 <Input
                     prompt={[prompt, setPrompt]}
                     loading={[loading, setLoading]}

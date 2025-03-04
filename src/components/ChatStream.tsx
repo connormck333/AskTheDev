@@ -10,10 +10,10 @@ interface ChatStreamProps {
 
 export default function ChatStream(props: ChatStreamProps): ReactElement {
 
-    const [stream, setStream] = props.stream;
+    const [stream] = props.stream;
 
     return (
-        <div className="flex flex-col items-end">
+        <div className="flex flex-col w-full">
             { stream.map((item: Chat) => (
                 item.userType === UserType.AI ?
                     <Output
