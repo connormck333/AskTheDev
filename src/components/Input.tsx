@@ -1,12 +1,20 @@
-import { ChangeEvent, ReactElement, useState } from "react";
-import { Status } from "../utils/interfaces";
+import { ChangeEvent, Dispatch, ReactElement, SetStateAction } from "react";
+import { Chat, Status } from "../utils/interfaces";
 import { sendQuestionToOpenAI } from "../methods/sendQuestionToOpenAI";
 import Spinner from "./Spinner";
+import UserType from "../utils/UserType";
 
-export default function Input(): ReactElement {
+interface InputProps {
+    chatStream: [Chat[], Dispatch<SetStateAction<Chat[]>>],
+    prompt: [string, Dispatch<SetStateAction<string>>],
+    loading: [boolean, Dispatch<SetStateAction<boolean>>]
+}
 
-    const [prompt, setPrompt] = useState<string>("");
-    const [loading, setLoading] = useState<boolean>(false);
+export default function Input(props: InputProps): ReactElement {
+
+    const [chatStream, setChatStream] = props.chatStream;
+    const [prompt, setPrompt] =  props.prompt;
+    const [loading, setLoading] = props.loading;
 
     async function submitPrompt(): Promise<void> {
         if (loading) return;
@@ -15,18 +23,31 @@ export default function Input(): ReactElement {
             return;
         }
 
+        const savedStream: Chat[] = chatStream;
+        savedStream.push({
+            message: prompt,
+            userType: UserType.Client,
+            timestamp: Date.now()
+        });
+
+        setChatStream([...savedStream]);
+
         setLoading(true);
 
         const response: Status = await sendQuestionToOpenAI(prompt);
 
         setLoading(false);
 
-        if (!response) {
+        if (!response || !response.data) {
             alert("There was an error communicating with OpenAI. Please try again later.");
             return;
         }
 
-        alert("Success");
+        setChatStream([...savedStream, {
+            message: response.data,
+            userType: UserType.AI,
+            timestamp: Date.now()
+        }]);
     }
 
     function closeWindow(): void {

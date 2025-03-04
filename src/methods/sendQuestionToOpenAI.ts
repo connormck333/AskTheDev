@@ -4,9 +4,13 @@ import { openai } from "./OpenAi";
 import { getCurrentTabHTML } from "./getCurrentTabHTML";
 
 async function sendQuestionToOpenAI(prompt: string): Promise<Status> {
-    const tabTextContent = await getCurrentTabHTML();
-    if (!tabTextContent.success) {
-        return { success: false };
+    // const tabTextContent = await getCurrentTabHTML();
+    // if (!tabTextContent.success) {
+    //     return { success: false };
+    // }
+
+    const tabTextContent = {
+        data: "<fake context, you can ignore this for now>"
     }
 
     try {
@@ -20,7 +24,7 @@ async function sendQuestionToOpenAI(prompt: string): Promise<Status> {
 
         console.log(completion.choices);
 
-        return { success: true, data: completion.choices[0].message.content }
+        return { success: true, data: completion.choices[0].message.content as string }
     } catch (error) {
         return { success: false};
     }

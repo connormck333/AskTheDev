@@ -1,8 +1,19 @@
+import UserType from "./UserType"
+
 interface Status {
     success: boolean,
-    data?: any
+    data?: string
 }
 
+interface Chat {
+    message: string
+    userType: UserType,
+    timestamp: number
+}
+
+
+
 export type {
-    Status
+    Status,
+    Chat
 }
