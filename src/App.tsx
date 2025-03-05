@@ -4,10 +4,11 @@ import Input from './components/Input';
 import Logo from './components/Logo';
 import { Chat } from './utils/interfaces';
 import ChatStream from './components/ChatStream';
+import UserType from './utils/UserType';
 
 function App(): ReactElement {
 
-    const [chatStream, setChatStream] = useState<Chat[]>([]);
+    const [chatStream, setChatStream] = useState<Chat[]>([{message: "Hello, how are you? Are you well? I am well", userType: UserType.AI, timestamp: Date.now()}]);
     const [prompt, setPrompt] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
   
