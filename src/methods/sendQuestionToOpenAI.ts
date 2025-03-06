@@ -23,7 +23,8 @@ async function sendQuestionToOpenAI(prompt: string): Promise<Status> {
                     This may contain irrelevant information as it has been parsed from the html of the webpage.
                     You should be able to recognise irrelevant content and ignore it.
                     It is your job to provide an accurate and relevant answer to the user's question using the provided web page text as context.
-                    You should quote the provided context when necessary to backup your point.`
+                    You should quote the provided context when necessary to backup your point.
+                    You should provide an answer in a markdown format.`
                 },
                 {"role": "user", "content": "Here is the text of the current Chrome tab: " + tabTextContent.data + ". Please provide an answer using the html as context to the following question / prompt: " + prompt}
             ]
