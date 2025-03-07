@@ -1,3 +1,4 @@
+import { RefObject } from "react";
 import UserType from "./UserType"
 
 interface Status {
@@ -11,9 +12,10 @@ interface Chat {
     timestamp: number
 }
 
-
+type ScrollContainer = RefObject<HTMLDivElement | null>;
 
 export type {
     Status,
-    Chat
+    Chat,
+    ScrollContainer
 }

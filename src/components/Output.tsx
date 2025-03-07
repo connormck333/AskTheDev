@@ -1,4 +1,4 @@
-import { ReactElement } from "react";
+import { ReactElement, useRef } from "react";
 import { Chat } from "../utils/interfaces";
 import TypedChat from "./TypedChat";
 
@@ -9,9 +9,13 @@ interface OutputProps {
 export default function Output(props: OutputProps): ReactElement {
 
     const chat: Chat = props.value;
+    const containerRef = useRef<HTMLDivElement>(null);
 
     return (
-        <div className="flex items-start gap-2.5 pb-10 w-full">
+        <div
+            ref={containerRef}
+            className="flex items-start gap-2.5 pb-10 w-full"
+        >
             <img className="w-8 h-8 rounded-full" src="/icon.png" alt="Jese image" />
             <div className="flex flex-col gap-1 max-w-[500px]">
                 <div className="flex items-center space-x-2 rtl:space-x-reverse">
@@ -22,6 +26,7 @@ export default function Output(props: OutputProps): ReactElement {
                     <TypedChat
                         message={chat.message}
                         speed={0.5}
+                        containerRef={containerRef}
                     />
                 </div>
             </div>

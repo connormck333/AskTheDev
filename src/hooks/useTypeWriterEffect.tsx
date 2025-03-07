@@ -1,7 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import ScrollContainerContext from "../context/scrollContainerContext";
+import { ScrollContainer } from "../utils/interfaces";
 
-const useTypeWriterEffect = (text: string, speed: number = 50) => {
+const useTypeWriterEffect = (
+    text: string,
+    speed: number = 50
+) => {
+
+    const scrollContainer = useContext<ScrollContainer | null>(ScrollContainerContext);
     const [displayText, setDisplayText] = useState<string>("");
+
+    useEffect(() => {
+        if (scrollContainer?.current) {
+            scrollContainer.current.scrollTop = scrollContainer.current.scrollHeight;
+        }
+    }, [displayText]);
 
     useEffect(() => {
         let i: number = 0;

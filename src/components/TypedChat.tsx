@@ -1,11 +1,12 @@
-import { ReactElement } from "react";
+import { ReactElement, RefObject } from "react";
 import useTypeWriterEffect from "../hooks/useTypeWriterEffect";
 import Markdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 
 interface TypedChatProps {
     message: string,
-    speed: number
+    speed: number,
+    containerRef: RefObject<HTMLDivElement | null>
 }
 
 export default function TypedChat(props: TypedChatProps): ReactElement {

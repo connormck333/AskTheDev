@@ -47,3 +47,16 @@
 .read-the-docs {
   color: #888;
 }
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+
+.main-container {
+  position: relative;
+  bottom: 20px;
+}
