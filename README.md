@@ -1,3 +1,5 @@
+![AskTheDev logo](./public/logo.png)
+
 # Ask The Dev
 An AI Chrome Extension for developers. AskTheDev reads the HTML of the webpage which you are on and sends it to OpenAI with your question. This allows developers to ask questions about the content they are visiting as if they were asking the creator themselves.
 
