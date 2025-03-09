@@ -1,4 +1,4 @@
-package com.devconnor.askthedev.models.authentication;
+package com.devconnor.askthedev.models;
 
 import lombok.Data;
 

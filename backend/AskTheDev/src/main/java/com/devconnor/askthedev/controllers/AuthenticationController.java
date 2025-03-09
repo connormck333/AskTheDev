@@ -1,18 +1,10 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
-import com.devconnor.askthedev.models.User;
-import com.devconnor.askthedev.models.authentication.UserAuthRequest;
-import com.devconnor.askthedev.repositories.UserRepository;
+import com.devconnor.askthedev.models.UserAuthRequest;
+import com.devconnor.askthedev.services.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,51 +14,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthenticationController {
 
-    private final AuthenticationManager authenticationManager;
+    private final AuthenticationService authenticationService;
 
-    private final PasswordEncoder passwordEncoder;
-
-    private final UserRepository userRepository;
-
-    public AuthenticationController(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, UserRepository userRepository) {
-        this.authenticationManager = authenticationManager;
-        this.passwordEncoder = passwordEncoder;
-        this.userRepository = userRepository;
+    public AuthenticationController(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UserAuthRequest userAuthRequest, HttpServletRequest request) {
-        Authentication authReq = UsernamePasswordAuthenticationToken
-                .unauthenticated(userAuthRequest.getEmail(), userAuthRequest.getPassword());
-        Authentication authRes = authenticationManager.authenticate(authReq);
-
-        SecurityContextHolder.getContext().setAuthentication(authRes);
-
-        HttpSession session = request.getSession();
-        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-
-        return new ResponseEntity<>("User logged in.", HttpStatus.OK);
+    public ResponseEntity<String> login(HttpServletRequest request, @RequestBody UserAuthRequest userAuthRequest) {
+        return authenticationService.login(request, userAuthRequest.getEmail(), userAuthRequest.getPassword());
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<ATDUserResponse> registerUser(@RequestBody UserAuthRequest userAuthRequest, HttpServletRequest request) {
-        if (userRepository.existsUserByEmail(userAuthRequest.getEmail())) {
-            ATDUserResponse atdUserResponse = new ATDUserResponse();
-            atdUserResponse.setMessage("User already exists.");
-            return new ResponseEntity<>(atdUserResponse, HttpStatus.CONFLICT);
-        }
-
-        User user = new User();
-        user.setEmail(userAuthRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(userAuthRequest.getPassword()));
-
-        User savedUser = userRepository.save(user);
-
-        ATDUserResponse atdUserResponse = new ATDUserResponse();
-        atdUserResponse.setUserId(savedUser.getId());
-        atdUserResponse.setEmail(savedUser.getEmail());
-        atdUserResponse.setMessage("User registered successfully.");
-
-        return new ResponseEntity<>(atdUserResponse, HttpStatus.CREATED);
+    public ResponseEntity<ATDUserResponse> registerUser(@RequestBody UserAuthRequest userAuthRequest) {
+        return authenticationService.register(userAuthRequest.getEmail(), userAuthRequest.getPassword());
     }
 }
