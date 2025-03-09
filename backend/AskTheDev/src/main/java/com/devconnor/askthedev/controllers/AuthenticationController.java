@@ -6,7 +6,6 @@ import com.devconnor.askthedev.models.authentication.UserAuthRequest;
 import com.devconnor.askthedev.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,18 +22,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthenticationController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public AuthenticationController(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, UserRepository userRepository) {
+        this.authenticationManager = authenticationManager;
+        this.passwordEncoder = passwordEncoder;
+        this.userRepository = userRepository;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UserAuthRequest userAuthRequest, HttpServletRequest request) {
-        Authentication authReq = UsernamePasswordAuthenticationToken.unauthenticated(userAuthRequest.getEmail(), userAuthRequest.getPassword());
+        Authentication authReq = UsernamePasswordAuthenticationToken
+                .unauthenticated(userAuthRequest.getEmail(), userAuthRequest.getPassword());
         Authentication authRes = authenticationManager.authenticate(authReq);
 
         SecurityContextHolder.getContext().setAuthentication(authRes);
