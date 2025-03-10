@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import static com.devconnor.askthedev.utils.Constants.INVALID_SESSION_MESSAGE;
+
 @Slf4j
 @RestController
 @RequestMapping("/user")
@@ -22,19 +24,16 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ATDUserResponse> getUserById(@PathVariable Long id) {
-        User user = userService.getUserById(id);
         ATDUserResponse atdUserResponse = new ATDUserResponse();
-        if (user == null) {
-            atdUserResponse.setMessage("User not found");
-            return new ResponseEntity<>(atdUserResponse, HttpStatus.NOT_FOUND);
-        }
 
-        if (!authenticationService.verifyUserSession(user.getEmail())) {
-            atdUserResponse.setMessage("Invalid session");
+        if (!authenticationService.verifyUserSession(id)) {
+            atdUserResponse.setMessage(INVALID_SESSION_MESSAGE);
             return new ResponseEntity<>(atdUserResponse, HttpStatus.UNAUTHORIZED);
         }
 
+        User user = userService.getUserById(id);
         atdUserResponse.setUser(user);
+
         return ResponseEntity.ok().body(atdUserResponse);
     }
 }

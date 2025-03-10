@@ -23,6 +23,8 @@ public class AuthenticationService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final UserService userService;
+
     private final UserRepository userRepository;
 
     public ResponseEntity<String> login(HttpServletRequest request, String email, String password) {
@@ -67,5 +69,12 @@ public class AuthenticationService {
 
         String authenticatedEmail = auth.getName();
         return email.equals(authenticatedEmail);
+    }
+
+    public boolean verifyUserSession(Long userId) {
+        User user = userService.getUserById(userId);
+        if (user == null) return false;
+
+        return verifyUserSession(user.getEmail());
     }
 }
