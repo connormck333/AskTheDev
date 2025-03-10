@@ -6,10 +6,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ATDUserResponse {
+public class ATDUserResponse extends ATDResponse {
     private String email;
     private Long userId;
-    private String message;
 
     public void setUser(User user) {
         this.email = user.getEmail();
