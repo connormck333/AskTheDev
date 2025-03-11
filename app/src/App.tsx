@@ -18,7 +18,12 @@ function App(): ReactElement {
         const response: Status = await getCurrentUser();
         if (!response.success) {
             setSignedIn(false);
+            return;
         }
+
+        console.log(response)
+
+        if (signedIn || signedInUser) {}
 
         setSignedInUser(response.data);
         setSignedIn(true);

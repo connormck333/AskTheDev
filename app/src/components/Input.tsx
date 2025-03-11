@@ -37,6 +37,8 @@ export default function Input(props: InputProps): ReactElement {
 
         const response: Status = await sendQuestionToOpenAI(1, prompt);
 
+        console.log(response)
+
         setLoading(false);
 
         if (!response || !response.data) {
@@ -45,7 +47,7 @@ export default function Input(props: InputProps): ReactElement {
         }
 
         setChatStream([...savedStream, {
-            message: response.data,
+            message: response.data.prompt.openAIResponse,
             userType: UserType.AI,
             timestamp: Date.now()
         }]);

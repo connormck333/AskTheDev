@@ -3,7 +3,7 @@ import UserType from "./UserType"
 
 interface Status {
     success: boolean,
-    data?: string
+    data?: any
 }
 
 interface Chat {

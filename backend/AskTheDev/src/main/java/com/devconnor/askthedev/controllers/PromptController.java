@@ -32,9 +32,11 @@ public class PromptController {
             @PathVariable Long userId,
             @RequestBody Prompt prompt
     ) {
-        ATDPromptResponse atdPromptResponse = (ATDPromptResponse) validateSession(request, userId);
+        ATDResponse atdPromptResponse = validateSession(request, userId);
         if (atdPromptResponse != null) {
-            return new ResponseEntity<>(atdPromptResponse, HttpStatus.UNAUTHORIZED);
+            ATDPromptResponse response = new ATDPromptResponse();
+            response.setMessage(atdPromptResponse.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
         prompt.setUserId(userId);

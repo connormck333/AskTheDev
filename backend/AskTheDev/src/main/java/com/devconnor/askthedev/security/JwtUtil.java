@@ -57,7 +57,7 @@ public class JwtUtil {
     public boolean isSessionValid(HttpServletRequest request, Long userId) {
         User user = userService.getUserById(userId);
 
-        return !isSessionValid(request, user.getEmail());
+        return isSessionValid(request, user.getEmail());
     }
 
     private boolean isTokenExpired(String token) {
