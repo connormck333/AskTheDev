@@ -2,6 +2,7 @@ package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.models.User;
+import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.services.AuthenticationService;
 import com.devconnor.askthedev.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -20,18 +21,18 @@ public class UserController {
 
     private final UserService userService;
 
-    private final AuthenticationService authenticationService;
+    private final JwtUtil jwtUtil;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ATDUserResponse> getUserById(@PathVariable Long id) {
+    public ResponseEntity<ATDUserResponse> getUserById(@RequestHeader("Authorization") String jwtToken, @PathVariable Long id) {
         ATDUserResponse atdUserResponse = new ATDUserResponse();
+        User user = userService.getUserById(id);
 
-        if (!authenticationService.verifyUserSession(id)) {
+        if (!jwtUtil.isTokenValid(jwtToken, user.getEmail())) {
             atdUserResponse.setMessage(INVALID_SESSION_MESSAGE);
             return new ResponseEntity<>(atdUserResponse, HttpStatus.UNAUTHORIZED);
         }
 
-        User user = userService.getUserById(id);
         atdUserResponse.setUser(user);
 
         return ResponseEntity.ok().body(atdUserResponse);

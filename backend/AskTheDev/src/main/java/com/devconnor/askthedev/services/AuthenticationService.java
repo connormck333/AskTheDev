@@ -3,6 +3,7 @@ package com.devconnor.askthedev.services;
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
+import com.devconnor.askthedev.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,17 +29,29 @@ public class AuthenticationService {
 
     private final UserRepository userRepository;
 
+    private final JwtUtil jwtUtil;
+
     public ResponseEntity<String> login(HttpServletRequest request, String email, String password) {
-        Authentication authReq = UsernamePasswordAuthenticationToken
-                .unauthenticated(email, password);
-        Authentication authRes = authenticationManager.authenticate(authReq);
+        try {
+//            Authentication authReq = UsernamePasswordAuthenticationToken
+//                    .unauthenticated(email, password);
+//            authenticationManager.authenticate(authReq);
 
-        SecurityContextHolder.getContext().setAuthentication(authRes);
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password)
+            );
 
-        HttpSession session = request.getSession();
-        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+            String jwtToken = jwtUtil.generateJwtToken(email);
 
-        return new ResponseEntity<>("User logged in.", HttpStatus.OK);
+//        SecurityContextHolder.getContext().setAuthentication(authRes);
+//
+//        HttpSession session = request.getSession();
+//        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+            return ResponseEntity.ok(jwtToken);
+        } catch (AuthenticationException ex) {
+            return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+        }
     }
 
     public ResponseEntity<ATDUserResponse> register(String email, String password) {
