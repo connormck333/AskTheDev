@@ -35,7 +35,7 @@ export default function Input(props: InputProps): ReactElement {
 
         setLoading(true);
 
-        const response: Status = await sendQuestionToOpenAI(prompt);
+        const response: Status = await sendQuestionToOpenAI(1, prompt);
 
         setLoading(false);
 

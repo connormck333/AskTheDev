@@ -5,8 +5,9 @@ import com.devconnor.askthedev.controllers.response.ATDPromptResponse;
 import com.devconnor.askthedev.controllers.response.ATDResponse;
 import com.devconnor.askthedev.models.Prompt;
 import com.devconnor.askthedev.repositories.PromptRepository;
-import com.devconnor.askthedev.services.AuthenticationService;
+import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.services.PromptService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,15 +20,19 @@ import static com.devconnor.askthedev.utils.Constants.INVALID_SESSION_MESSAGE;
 @RequiredArgsConstructor
 public class PromptController {
 
-    private final AuthenticationService authenticationService;
+    private final JwtUtil jwtUtil;
 
     private final PromptService promptService;
 
     private final PromptRepository promptRepository;
 
     @PostMapping("/{userId}")
-    public ResponseEntity<ATDPromptResponse> prompt(@PathVariable Long userId, @RequestBody Prompt prompt) {
-        ATDPromptResponse atdPromptResponse = (ATDPromptResponse) validateSession(userId);
+    public ResponseEntity<ATDPromptResponse> prompt(
+            HttpServletRequest request,
+            @PathVariable Long userId,
+            @RequestBody Prompt prompt
+    ) {
+        ATDPromptResponse atdPromptResponse = (ATDPromptResponse) validateSession(request, userId);
         if (atdPromptResponse != null) {
             return new ResponseEntity<>(atdPromptResponse, HttpStatus.UNAUTHORIZED);
         }
@@ -42,11 +47,12 @@ public class PromptController {
 
     @GetMapping("/retrieve")
     public ResponseEntity<ATDPromptListResponse> retrievePrompts(
+            HttpServletRequest request,
             @RequestParam Long id,
             @RequestParam String webUrl,
             @RequestParam int minPage
     ) {
-        ATDPromptListResponse atdPromptResponse = (ATDPromptListResponse) validateSession(id);
+        ATDPromptListResponse atdPromptResponse = (ATDPromptListResponse) validateSession(request, id);
         if (atdPromptResponse != null) {
             return new ResponseEntity<>(atdPromptResponse, HttpStatus.UNAUTHORIZED);
         }
@@ -54,9 +60,9 @@ public class PromptController {
         return promptService.getPrompts(webUrl, id, minPage);
     }
 
-    private ATDResponse validateSession(Long userId) {
-        ATDResponse atdPromptResponse = new ATDResponse();
-        if (!authenticationService.verifyUserSession(userId)) {
+    private ATDResponse validateSession(HttpServletRequest request, Long userId) {
+        if (!jwtUtil.isSessionValid(request, userId)) {
+            ATDResponse atdPromptResponse = new ATDResponse();
             atdPromptResponse.setMessage(INVALID_SESSION_MESSAGE);
             return atdPromptResponse;
         }

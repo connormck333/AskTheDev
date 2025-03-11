@@ -29,4 +29,14 @@ public class UserService {
         log.info("User with id {} not found", userId);
         return null;
     }
+
+    public User getUserByEmail(String email) {
+        Optional<User> optionalUser = userRepository.findUserByEmail(email);
+        if (optionalUser.isPresent()) {
+            return optionalUser.get();
+        }
+
+        log.info("User with email {} not found", email);
+        return null;
+    }
 }

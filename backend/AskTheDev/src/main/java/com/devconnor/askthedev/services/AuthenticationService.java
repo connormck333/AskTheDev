@@ -4,18 +4,16 @@ import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.security.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +29,7 @@ public class AuthenticationService {
 
     private final JwtUtil jwtUtil;
 
-    public ResponseEntity<String> login(HttpServletRequest request, String email, String password) {
+    public ResponseEntity<String> login(HttpServletResponse response, String email, String password) {
         try {
 //            Authentication authReq = UsernamePasswordAuthenticationToken
 //                    .unauthenticated(email, password);
@@ -41,20 +39,20 @@ public class AuthenticationService {
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
-            String jwtToken = jwtUtil.generateJwtToken(email);
+            jwtUtil.saveHttpCookie(response, email);
 
 //        SecurityContextHolder.getContext().setAuthentication(authRes);
 //
 //        HttpSession session = request.getSession();
 //        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
-            return ResponseEntity.ok(jwtToken);
+            return ResponseEntity.ok("Login successful");
         } catch (AuthenticationException ex) {
             return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }
 
-    public ResponseEntity<ATDUserResponse> register(String email, String password) {
+    public ResponseEntity<ATDUserResponse> register(HttpServletResponse response, String email, String password) {
         if (userRepository.existsUserByEmail(email)) {
             ATDUserResponse atdUserResponse = new ATDUserResponse();
             atdUserResponse.setMessage("User already exists.");
@@ -67,28 +65,13 @@ public class AuthenticationService {
 
         User savedUser = userRepository.save(user);
 
+        jwtUtil.saveHttpCookie(response, email);
+
         ATDUserResponse atdUserResponse = new ATDUserResponse();
         atdUserResponse.setUserId(savedUser.getId());
         atdUserResponse.setEmail(savedUser.getEmail());
         atdUserResponse.setMessage("User registered successfully.");
 
         return new ResponseEntity<>(atdUserResponse, HttpStatus.CREATED);
-    }
-
-    public boolean verifyUserSession(String email) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return false;
-        }
-
-        String authenticatedEmail = auth.getName();
-        return email.equals(authenticatedEmail);
-    }
-
-    public boolean verifyUserSession(Long userId) {
-        User user = userService.getUserById(userId);
-        if (user == null) return false;
-
-        return verifyUserSession(user.getEmail());
     }
 }

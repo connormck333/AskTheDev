@@ -1,4 +1,4 @@
-import { Status } from "../utils/interfaces";
+import { Status } from "../../utils/interfaces";
 
 async function getCurrentTabHTML(): Promise<Status> {
     try {
