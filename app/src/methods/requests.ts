@@ -41,8 +41,6 @@ async function sendGetRequest(endpoint: string, params: GetParam[]): Promise<Sta
             }
         });
 
-        console.log(response.status);
-
         if (response.status != 200) {
             return { success: false };
         }

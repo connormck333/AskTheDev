@@ -9,7 +9,8 @@ interface Status {
 interface Chat {
     message: string
     userType: UserType,
-    timestamp: number
+    timestamp: number,
+    showTyping?: boolean
 }
 
 interface GetParam {

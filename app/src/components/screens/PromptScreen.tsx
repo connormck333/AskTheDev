@@ -55,7 +55,8 @@ Please ask me anything, I am already caught up with your current webpage!
             chats.push({
                 message: prevPrompt.openAIResponse,
                 timestamp: timestamp,
-                userType: UserType.AI
+                userType: UserType.AI,
+                showTyping: false
             });
         }
 

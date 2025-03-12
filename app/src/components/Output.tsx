@@ -27,6 +27,7 @@ export default function Output(props: OutputProps): ReactElement {
                         message={chat.message}
                         speed={0.5}
                         containerRef={containerRef}
+                        disabled={chat.showTyping === false}
                     />
                 </div>
             </div>
