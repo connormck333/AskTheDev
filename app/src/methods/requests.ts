@@ -41,6 +41,8 @@ async function sendGetRequest(endpoint: string, params: GetParam[]): Promise<Sta
             }
         });
 
+        console.log(response.status);
+
         if (response.status != 200) {
             return { success: false };
         }
@@ -53,6 +55,7 @@ async function sendGetRequest(endpoint: string, params: GetParam[]): Promise<Sta
         return { success: true, data: data };
 
     } catch (error: any) {
+        console.log(error)
         return { success: false };
     }
 }
@@ -107,8 +110,9 @@ function formatParams(params: GetParam[]): string {
     if (params.length === 0) return "";
     
     let query = "?";
-    for (let param of params) {
-        query += "&" + param.key + "=" + encodeURIComponent(param.value);
+    for (let i = 0; i < params.length; i++) {
+        const param: GetParam = params[i];
+        query += (i !== 0 ? "&" : "") + param.key + "=" + encodeURIComponent(param.value);
     }
 
     return query;

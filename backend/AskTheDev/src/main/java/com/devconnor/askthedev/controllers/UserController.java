@@ -15,7 +15,7 @@ import static com.devconnor.askthedev.utils.Constants.INVALID_SESSION_MESSAGE;
 import static com.devconnor.askthedev.utils.Constants.USER_NOT_FOUND;
 
 @Slf4j
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor

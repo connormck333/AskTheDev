@@ -1,7 +1,7 @@
-import { SendPromptBody, Status } from "../utils/interfaces";
-import { getCurrentTabHTML } from "./chrome/getCurrentTabHTML";
-import { getCurrentWebUrl } from "./chrome/getCurrentWebUrl";
-import { sendPostRequest } from "./requests";
+import { SendPromptBody, Status } from "../../utils/interfaces";
+import { getCurrentTabHTML } from "../chrome/getCurrentTabHTML";
+import { getCurrentWebUrl } from "../chrome/getCurrentWebUrl";
+import { sendPostRequest } from "../requests";
 
 async function sendQuestionToOpenAI(userId: number, prompt: string): Promise<Status> {
     const tabTextContent = await getCurrentTabHTML();
@@ -18,6 +18,7 @@ async function sendQuestionToOpenAI(userId: number, prompt: string): Promise<Sta
         return { success: false };
     }
 
+    // const webUrl: string = "http://localhost:5173";
     const body: SendPromptBody = {
         userPrompt: prompt,
         pageContent: tabTextContent.data as string,

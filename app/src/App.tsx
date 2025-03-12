@@ -21,8 +21,6 @@ function App(): ReactElement {
             return;
         }
 
-        console.log(response)
-
         if (signedIn || signedInUser) {}
 
         setSignedInUser(response.data);
@@ -35,7 +33,7 @@ function App(): ReactElement {
   
     return (
         <div className="items-center flex flex-col main-container">
-            { !signedIn ? <RegisterScreen /> : <PromptScreen /> }
+            { !signedIn ? <RegisterScreen /> : <PromptScreen user={signedInUser} /> }
         </div>
     );
 }

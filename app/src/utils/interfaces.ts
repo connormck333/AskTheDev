@@ -14,7 +14,7 @@ interface Chat {
 
 interface GetParam {
     key: string,
-    value: string
+    value: string | number
 }
 
 interface SendPromptBody {

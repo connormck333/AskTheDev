@@ -1,6 +1,6 @@
 import { ChangeEvent, Dispatch, ReactElement, SetStateAction } from "react";
 import { Chat, Status } from "../utils/interfaces";
-import { sendQuestionToOpenAI } from "../methods/sendQuestionToOpenAI";
+import { sendQuestionToOpenAI } from "../methods/prompts/sendQuestionToOpenAI";
 import Spinner from "./Spinner";
 import UserType from "../utils/UserType";
 

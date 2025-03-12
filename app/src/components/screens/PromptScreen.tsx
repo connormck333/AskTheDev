@@ -1,13 +1,19 @@
-import { ReactElement, useRef, useState } from "react";
+import { ReactElement, useEffect, useRef, useState } from "react";
 import ScrollContainerContext from "../../context/scrollContainerContext";
 import Logo from "../Logo";
 import ChatStream from "../ChatStream";
 import Input from "../Input";
-import { Chat } from "../../utils/interfaces";
+import { Chat, SendPromptResponse, Status } from "../../utils/interfaces";
 import UserType from "../../utils/UserType";
+import { getPreviousPromptsByPage } from "../../methods/prompts/getPreviousPrompts";
 
-export default function PromptScreen(): ReactElement {
+interface PromptScreenProps {
+    user: any
+}
 
+export default function PromptScreen(props: PromptScreenProps): ReactElement {
+
+    const { user } = props;
     const [chatStream, setChatStream] = useState<Chat[]>([{
         message: `
 ### Welcome to AskTheDev!
@@ -19,6 +25,42 @@ Please ask me anything, I am already caught up with your current webpage!
     const [prompt, setPrompt] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const scrollContainer = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        getPreviousPrompts();
+    }, []);
+
+    async function getPreviousPrompts(): Promise<void> {
+        const response: Status = await getPreviousPromptsByPage(user.userId as number, 0);
+        if (!response.success) {
+            alert("There was an error retrieving your prompt history.");
+            return;
+        }
+
+        const prevChats: Chat[] = formatPreviousPrompts(response.data.prompts);
+
+        setChatStream([...chatStream, ...prevChats]);
+    }
+
+    function formatPreviousPrompts(prevPrompts: SendPromptResponse[]): Chat[] {
+        const chats: Chat[] = [];
+        for (let prevPrompt of prevPrompts) {
+            const timestamp: number = new Date(prevPrompt.createdAt).getTime();
+            chats.push({
+                message: prevPrompt.userPrompt,
+                timestamp: timestamp,
+                userType: UserType.Client
+            });
+
+            chats.push({
+                message: prevPrompt.openAIResponse,
+                timestamp: timestamp,
+                userType: UserType.AI
+            });
+        }
+
+        return chats;
+    }
 
     return (
         <div>
