@@ -2,7 +2,6 @@ import { CheckIcon } from '@heroicons/react/20/solid';
 import { useState } from 'react';
 import { Status, User } from '../utils/interfaces';
 import { createCheckoutSession } from '../methods/payments/createCheckoutSession';
-import { Stripe } from '@stripe/stripe-js';
 
 const tiers = [
     {
@@ -41,6 +40,7 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
     const [loading, setLoading] = useState<boolean>(false);
 
     async function getPaymentIntent(): Promise<void> {
+        if (loading) {}
         setLoading(true);
 
         const response: Status = await createCheckoutSession(user.userId, 500);
@@ -56,7 +56,7 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
     }
 
     async function redirectToCheckout(url: string): Promise<void> {
-        window.location.href = url;
+        window.open(url);
     }
 
     return (
