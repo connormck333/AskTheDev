@@ -1,9 +1,9 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.request.PaymentRequest;
+import com.devconnor.askthedev.controllers.response.CheckoutSession;
 import com.devconnor.askthedev.services.StripeService;
 import com.stripe.exception.StripeException;
-import com.stripe.model.PaymentIntent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,16 +23,13 @@ public class PaymentsController {
         return ResponseEntity.ok("Purchase successful");
     }
 
-    @PostMapping("/create-intent")
-    public ResponseEntity<PaymentIntent> createPaymentIntent(
+    @PostMapping("/create-checkout")
+    public ResponseEntity<CheckoutSession> createPaymentIntent(
             @RequestBody PaymentRequest paymentRequest
     ) {
         try {
-            PaymentIntent intent = stripeService.createPaymentIntent(
-                    paymentRequest.getToken(),
-                    paymentRequest.getAmount()
-            );
-            return ResponseEntity.ok(intent);
+            String url = stripeService.createCheckoutSession("price_1R2gpoIW6fDMtSqJFfgdq3ls");
+            return ResponseEntity.ok(new CheckoutSession(url));
         } catch (StripeException e) {
             return ResponseEntity.status(500).body(null);
         }

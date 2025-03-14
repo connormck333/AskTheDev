@@ -1,8 +1,8 @@
 import { ReactElement, useState } from "react";
-import FormInput from "../FormInput";
-import { isValidEmail, isValidPassword } from "../../utils/inputValidation";
-import { Status } from "../../utils/interfaces";
-import { createAccount } from "../../methods/userManagement/createAccount";
+import FormInput from "../components/FormInput";
+import { isValidEmail, isValidPassword } from "../utils/inputValidation";
+import { Status } from "../utils/interfaces";
+import { createAccount } from "../methods/userManagement/createAccount";
 
 export default function RegisterScreen(): ReactElement {
 

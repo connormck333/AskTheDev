@@ -1,5 +1,6 @@
 import { RefObject } from "react";
 import UserType from "./UserType"
+import SubscriptionType from "./SubscriptionType";
 
 interface Status {
     success: boolean,
@@ -34,6 +35,13 @@ interface SendPromptResponse {
     userId: number
 }
 
+interface User {
+    userId: number,
+    email: string,
+    activeSubscription: boolean,
+    subscriptionType?: SubscriptionType
+}
+
 type ScrollContainer = RefObject<HTMLDivElement | null>;
 
 export type {
@@ -42,5 +50,6 @@ export type {
     GetParam,
     SendPromptBody,
     SendPromptResponse,
+    User,
     ScrollContainer
 }

@@ -1,8 +1,10 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
+import com.devconnor.askthedev.models.Subscription;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.security.JwtUtil;
+import com.devconnor.askthedev.services.SubscriptionService;
 import com.devconnor.askthedev.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,8 @@ import static com.devconnor.askthedev.utils.Constants.USER_NOT_FOUND;
 public class UserController {
 
     private final UserService userService;
+
+    private final SubscriptionService subscriptionService;
 
     private final JwtUtil jwtUtil;
 
@@ -61,7 +65,14 @@ public class UserController {
             return new ResponseEntity<>(atdUserResponse, HttpStatus.NOT_FOUND);
         }
 
+        Subscription subscription = subscriptionService.getSubscriptionByUserId(user.getId());
+
         atdUserResponse.setUser(user);
+        atdUserResponse.setActiveSubscription(subscription != null);
+        if (subscription != null) {
+            atdUserResponse.setSubscriptionType(subscription.getType());
+        }
+
         return new ResponseEntity<>(atdUserResponse, HttpStatus.OK);
     }
 

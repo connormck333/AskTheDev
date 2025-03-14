@@ -1,14 +1,15 @@
 import { ReactElement, useEffect, useState } from 'react';
 import './App.css';
-import PromptScreen from './components/screens/PromptScreen';
-import RegisterScreen from './components/screens/RegisterScreen';
-import { Status } from './utils/interfaces';
+import PromptScreen from './screens/PromptScreen';
+import RegisterScreen from './screens/RegisterScreen';
+import { Status, User } from './utils/interfaces';
 import { getCurrentUser } from './methods/userManagement/getCurrentUser';
+import SubscriptionScreen from './screens/SubscriptionScreen';
 
 function App(): ReactElement {
 
     const [signedIn, setSignedIn] = useState<boolean | undefined>(undefined);
-    const [signedInUser, setSignedInUser] = useState<any>();
+    const [signedInUser, setSignedInUser] = useState<User | undefined>(undefined);
 
     useEffect(() => {
         retrieveUserDetails();
@@ -33,7 +34,14 @@ function App(): ReactElement {
   
     return (
         <div className="items-center flex flex-col main-container">
-            { !signedIn ? <RegisterScreen /> : <PromptScreen user={signedInUser} /> }
+            { 
+                !signedIn
+                ? <RegisterScreen />
+                : (signedInUser?.activeSubscription
+                    ? <PromptScreen user={signedInUser} />
+                    : <SubscriptionScreen user={signedInUser as User} />
+                )
+            }
         </div>
     );
 }

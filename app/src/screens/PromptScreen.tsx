@@ -1,14 +1,14 @@
 import { ReactElement, useEffect, useRef, useState } from "react";
-import ScrollContainerContext from "../../context/scrollContainerContext";
-import Logo from "../Logo";
-import ChatStream from "../ChatStream";
-import Input from "../Input";
-import { Chat, SendPromptResponse, Status } from "../../utils/interfaces";
-import UserType from "../../utils/UserType";
-import { getPreviousPromptsByPage } from "../../methods/prompts/getPreviousPrompts";
+import ScrollContainerContext from "../context/scrollContainerContext";
+import Logo from "../components/Logo";
+import ChatStream from "../components/ChatStream";
+import Input from "../components/Input";
+import { Chat, SendPromptResponse, Status, User } from "../utils/interfaces";
+import UserType from "../utils/UserType";
+import { getPreviousPromptsByPage } from "../methods/prompts/getPreviousPrompts";
 
 interface PromptScreenProps {
-    user: any
+    user: User
 }
 
 export default function PromptScreen(props: PromptScreenProps): ReactElement {
