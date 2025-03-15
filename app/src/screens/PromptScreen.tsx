@@ -31,7 +31,7 @@ Please ask me anything, I am already caught up with your current webpage!
     }, []);
 
     async function getPreviousPrompts(): Promise<void> {
-        const response: Status = await getPreviousPromptsByPage(user.userId as number, 0);
+        const response: Status = await getPreviousPromptsByPage(user.userId, 0);
         if (!response.success) {
             alert("There was an error retrieving your prompt history.");
             return;
@@ -80,6 +80,7 @@ Please ask me anything, I am already caught up with your current webpage!
             </div>
             <div>
                 <Input
+                    userId={user.userId}
                     prompt={[prompt, setPrompt]}
                     loading={[loading, setLoading]}
                     chatStream={[chatStream, setChatStream]}

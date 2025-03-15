@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -31,5 +32,5 @@ public class Prompt {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    private Long userId;
+    private UUID userId;
 }

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.devconnor.askthedev.utils.Constants.*;
 
@@ -40,7 +41,7 @@ public class PromptService {
         return ResponseEntity.ok(atdPromptResponse);
     }
 
-    public ResponseEntity<ATDPromptListResponse> getPrompts(String webUrl, Long userId, int minPage) {
+    public ResponseEntity<ATDPromptListResponse> getPrompts(String webUrl, UUID userId, int minPage) {
         ATDPromptListResponse atdPromptListResponse = new ATDPromptListResponse();
         webUrl = validateWebUrl(atdPromptListResponse, webUrl);
         if (webUrl == null) {

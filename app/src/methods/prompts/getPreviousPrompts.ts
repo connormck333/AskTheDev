@@ -2,7 +2,7 @@ import { GetParam, Status } from "../../utils/interfaces";
 import { getCurrentWebUrl } from "../chrome/getCurrentWebUrl";
 import { sendGetRequest } from "../requests";
 
-async function getPreviousPromptsByPage(userId: number, minPage: number): Promise<Status> {
+async function getPreviousPromptsByPage(userId: string, minPage: number): Promise<Status> {
     const urlResponse: Status = await getCurrentWebUrl();
     if (!urlResponse.success) {
         return { success: false };

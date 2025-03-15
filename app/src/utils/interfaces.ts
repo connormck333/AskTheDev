@@ -32,11 +32,11 @@ interface SendPromptResponse {
     webUrl: string,
     openAIResponse: string,
     createdAt: string,
-    userId: number
+    userId: string
 }
 
 interface User {
-    userId: number,
+    userId: string,
     email: string,
     activeSubscription: boolean,
     subscriptionType?: SubscriptionType

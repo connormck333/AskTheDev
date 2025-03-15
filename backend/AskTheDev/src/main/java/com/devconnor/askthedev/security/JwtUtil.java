@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.UUID;
 
 import static com.devconnor.askthedev.utils.Constants.COOKIE_EXPIRATION_TIME;
 
@@ -54,7 +55,7 @@ public class JwtUtil {
         return (userEmail.equals(extractUserEmail(token)) && !isTokenExpired(token));
     }
 
-    public boolean isSessionValid(HttpServletRequest request, Long userId) {
+    public boolean isSessionValid(HttpServletRequest request, UUID userId) {
         User user = userService.getUserById(userId);
 
         return isSessionValid(request, user.getEmail());

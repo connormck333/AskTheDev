@@ -1,9 +1,12 @@
 package com.devconnor.askthedev.services;
 
-import com.devconnor.askthedev.models.Subscription;
+import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
+import com.devconnor.askthedev.utils.SubscriptionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -11,11 +14,12 @@ public class SubscriptionService {
 
     private final SubscriptionRepository subscriptionRepository;
 
-    public Subscription createSubscription(Subscription subscription) {
-        return subscriptionRepository.save(subscription);
+    public ATDSubscription createSubscription(SubscriptionType subscriptionType, UUID userId) {
+
+        return null;
     }
 
-    public Subscription getSubscriptionByUserId(Long userId) {
+    public ATDSubscription getSubscriptionByUserId(UUID userId) {
         return subscriptionRepository.getSubscriptionByUserId(userId);
     }
 }

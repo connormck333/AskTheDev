@@ -5,6 +5,7 @@ import Spinner from "./Spinner";
 import UserType from "../utils/UserType";
 
 interface InputProps {
+    userId: string,
     chatStream: [Chat[], Dispatch<SetStateAction<Chat[]>>],
     prompt: [string, Dispatch<SetStateAction<string>>],
     loading: [boolean, Dispatch<SetStateAction<boolean>>]
@@ -12,6 +13,7 @@ interface InputProps {
 
 export default function Input(props: InputProps): ReactElement {
 
+    const { userId } = props;
     const [chatStream, setChatStream] = props.chatStream;
     const [prompt, setPrompt] =  props.prompt;
     const [loading, setLoading] = props.loading;
@@ -35,7 +37,7 @@ export default function Input(props: InputProps): ReactElement {
 
         setLoading(true);
 
-        const response: Status = await sendQuestionToOpenAI(1, prompt);
+        const response: Status = await sendQuestionToOpenAI(userId, prompt);
 
         console.log(response)
 

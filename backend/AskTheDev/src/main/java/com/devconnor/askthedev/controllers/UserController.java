@@ -1,7 +1,7 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
-import com.devconnor.askthedev.models.Subscription;
+import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.services.SubscriptionService;
@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 import static com.devconnor.askthedev.utils.Constants.INVALID_SESSION_MESSAGE;
 import static com.devconnor.askthedev.utils.Constants.USER_NOT_FOUND;
@@ -32,7 +34,7 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<ATDUserResponse> getUserById(
             HttpServletRequest request,
-            @PathVariable Long id
+            @PathVariable UUID id
     ) {
         User user = userService.getUserById(id);
         ATDUserResponse atdUserResponse = validateUserSession(request, user);
@@ -65,12 +67,12 @@ public class UserController {
             return new ResponseEntity<>(atdUserResponse, HttpStatus.NOT_FOUND);
         }
 
-        Subscription subscription = subscriptionService.getSubscriptionByUserId(user.getId());
+        ATDSubscription ATDSubscription = subscriptionService.getSubscriptionByUserId(user.getId());
 
         atdUserResponse.setUser(user);
-        atdUserResponse.setActiveSubscription(subscription != null);
-        if (subscription != null) {
-            atdUserResponse.setSubscriptionType(subscription.getType());
+        atdUserResponse.setActiveSubscription(ATDSubscription != null);
+        if (ATDSubscription != null) {
+            atdUserResponse.setSubscriptionType(ATDSubscription.getType());
         }
 
         return new ResponseEntity<>(atdUserResponse, HttpStatus.OK);

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface PromptRepository extends JpaRepository<Prompt, Long> {
 
@@ -17,7 +18,7 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
     """, nativeQuery = true)
     List<Prompt> findLatestPrompts(
             @Param("webUrl") String webUrl,
-            @Param("userId") Long userId,
+            @Param("userId") UUID userId,
             @Param("limit") int limit,
             @Param("offset") int offset
     );

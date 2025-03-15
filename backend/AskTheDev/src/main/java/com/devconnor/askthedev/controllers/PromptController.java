@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 import static com.devconnor.askthedev.utils.Constants.INVALID_SESSION_MESSAGE;
 
 @RestController
@@ -29,7 +31,7 @@ public class PromptController {
     @PostMapping("/{userId}")
     public ResponseEntity<ATDPromptResponse> prompt(
             HttpServletRequest request,
-            @PathVariable Long userId,
+            @PathVariable UUID userId,
             @RequestBody Prompt prompt
     ) {
         ATDResponse atdPromptResponse = validateSession(request, userId);
@@ -50,7 +52,7 @@ public class PromptController {
     @GetMapping("/retrieve")
     public ResponseEntity<ATDPromptListResponse> retrievePrompts(
             HttpServletRequest request,
-            @RequestParam Long id,
+            @RequestParam UUID id,
             @RequestParam String webUrl,
             @RequestParam int minPage
     ) {
@@ -62,7 +64,7 @@ public class PromptController {
         return promptService.getPrompts(webUrl, id, minPage);
     }
 
-    private ATDResponse validateSession(HttpServletRequest request, Long userId) {
+    private ATDResponse validateSession(HttpServletRequest request, UUID userId) {
         if (!jwtUtil.isSessionValid(request, userId)) {
             ATDResponse atdPromptResponse = new ATDResponse();
             atdPromptResponse.setMessage(INVALID_SESSION_MESSAGE);
