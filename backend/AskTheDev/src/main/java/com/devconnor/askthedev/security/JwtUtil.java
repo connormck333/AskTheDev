@@ -1,6 +1,6 @@
 package com.devconnor.askthedev.security;
 
-import com.devconnor.askthedev.models.User;
+import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.services.user.UserService;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -56,7 +56,7 @@ public class JwtUtil {
     }
 
     public boolean isSessionValid(HttpServletRequest request, UUID userId) {
-        User user = userService.getUserById(userId);
+        UserDTO user = userService.getUserById(userId);
 
         return isSessionValid(request, user.getEmail());
     }

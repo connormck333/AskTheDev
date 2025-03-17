@@ -2,7 +2,7 @@ package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.models.ATDSubscription;
-import com.devconnor.askthedev.models.User;
+import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.services.payments.SubscriptionService;
 import com.devconnor.askthedev.services.user.UserService;
@@ -36,7 +36,7 @@ public class UserController {
             HttpServletRequest request,
             @PathVariable UUID id
     ) {
-        User user = userService.getUserById(id);
+        UserDTO user = userService.getUserById(id);
         ATDUserResponse atdUserResponse = validateUserSession(request, user);
         if (atdUserResponse != null) {
             return new ResponseEntity<>(atdUserResponse, HttpStatus.UNAUTHORIZED);
@@ -60,7 +60,7 @@ public class UserController {
         }
 
         String userEmail = jwtUtil.extractUserEmail(token);
-        User user = userService.getUserByEmail(userEmail);
+        UserDTO user = userService.getUserByEmail(userEmail);
 
         if (user == null) {
             atdUserResponse.setMessage(USER_NOT_FOUND);
@@ -78,7 +78,7 @@ public class UserController {
         return new ResponseEntity<>(atdUserResponse, HttpStatus.OK);
     }
 
-    private ATDUserResponse validateUserSession(HttpServletRequest request, User user) {
+    private ATDUserResponse validateUserSession(HttpServletRequest request, UserDTO user) {
         ATDUserResponse atdUserResponse = new ATDUserResponse();
 
         if (!jwtUtil.isSessionValid(request, user.getEmail())) {

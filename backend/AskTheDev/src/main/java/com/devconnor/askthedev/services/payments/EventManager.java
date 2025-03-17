@@ -5,7 +5,7 @@ import com.devconnor.askthedev.exception.InvalidEventException;
 import com.devconnor.askthedev.exception.SubscriptionNotFoundException;
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.PendingEvent;
-import com.devconnor.askthedev.models.User;
+import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.repositories.PendingEventRepository;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.services.user.UserService;
@@ -37,7 +37,7 @@ public class EventManager {
         String customerId = getCustomerIdFromSubscription(subscription);
         SubscriptionType subscriptionType = deriveSubscriptionType(subscription);
 
-        User user = userService.getUserByCustomerId(customerId);
+        UserDTO user = userService.getUserByCustomerId(customerId);
 
         ATDSubscription atdSubscription = new ATDSubscription();
         atdSubscription.setStripeSubscriptionId(subscription.getId());

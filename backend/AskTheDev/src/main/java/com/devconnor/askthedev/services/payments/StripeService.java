@@ -3,6 +3,7 @@ package com.devconnor.askthedev.services.payments;
 import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
 import com.devconnor.askthedev.models.User;
+import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.services.user.UserService;
@@ -27,18 +28,15 @@ public class StripeService {
 
     private final UserService userService;
     private final EventManager eventManager;
-    private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
 
     public StripeService(
             UserService userService,
             EventManager eventManager,
-            SubscriptionRepository subscriptionRepository,
             UserRepository userRepository
     ) {
         this.userService = userService;
         this.eventManager = eventManager;
-        this.subscriptionRepository = subscriptionRepository;
 
         Dotenv dotenv = Dotenv.configure().load();
         Stripe.apiKey = dotenv.get("STRIPE_API_KEY");
@@ -64,7 +62,7 @@ public class StripeService {
     }
 
     private Customer getCustomer(UUID userId) {
-        User user = userService.getUserById(userId);
+        User user = userService.findById(userId);
         if (user.getCustomerId() == null) {
             return createCustomer(user);
         }
