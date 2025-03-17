@@ -2,7 +2,7 @@ package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.models.UserAuthRequest;
-import com.devconnor.askthedev.services.AuthenticationService;
+import com.devconnor.askthedev.services.user.AuthenticationService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

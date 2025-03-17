@@ -1,4 +1,4 @@
-package com.devconnor.askthedev.services;
+package com.devconnor.askthedev.services.prompt;
 
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;

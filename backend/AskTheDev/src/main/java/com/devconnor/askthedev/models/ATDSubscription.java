@@ -18,11 +18,15 @@ public class ATDSubscription {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private String stripeSubscriptionId;
+
     private UUID userId;
 
     private SubscriptionType type;
 
-    private String customerId;
+    private boolean active;
+
+    private String status;
 
     @CreationTimestamp
     @Column(updatable = false)

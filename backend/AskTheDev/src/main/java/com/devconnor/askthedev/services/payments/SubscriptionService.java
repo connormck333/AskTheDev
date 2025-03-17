@@ -1,4 +1,4 @@
-package com.devconnor.askthedev.services;
+package com.devconnor.askthedev.services.payments;
 
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;

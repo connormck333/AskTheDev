@@ -1,4 +1,4 @@
-package com.devconnor.askthedev.services;
+package com.devconnor.askthedev.services.prompt;
 
 import com.devconnor.askthedev.controllers.response.ATDPromptListResponse;
 import com.devconnor.askthedev.controllers.response.ATDPromptResponse;

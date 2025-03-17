@@ -2,14 +2,13 @@ package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.request.PaymentRequest;
 import com.devconnor.askthedev.controllers.response.CheckoutSession;
-import com.devconnor.askthedev.services.StripeService;
-import com.devconnor.askthedev.services.SubscriptionService;
+import com.devconnor.askthedev.services.payments.StripeService;
+import com.devconnor.askthedev.services.payments.SubscriptionService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import com.stripe.net.Webhook;
 import io.github.cdimascio.dotenv.Dotenv;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

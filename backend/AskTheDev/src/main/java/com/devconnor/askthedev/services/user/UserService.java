@@ -1,5 +1,7 @@
-package com.devconnor.askthedev.services;
+package com.devconnor.askthedev.services.user;
 
+import com.devconnor.askthedev.exception.CustomerNotFoundException;
+import com.devconnor.askthedev.exception.InvalidUserIdException;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,7 @@ public class UserService {
         }
 
         log.info("User with id {} not found", userId);
-        return null;
+        throw new InvalidUserIdException(userId);
     }
 
     public User getUserByEmail(String email) {
@@ -39,5 +41,15 @@ public class UserService {
 
         log.info("User with email {} not found", email);
         return null;
+    }
+
+    public User getUserByCustomerId(String customerId) {
+        Optional<User> optionalUser = userRepository.findUserByCustomerId(customerId);
+        if (optionalUser.isPresent()) {
+            return optionalUser.get();
+        }
+
+        log.info("User with customer id {} not found", customerId);
+        throw new CustomerNotFoundException();
     }
 }

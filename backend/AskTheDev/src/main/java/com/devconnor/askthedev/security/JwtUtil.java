@@ -1,7 +1,7 @@
 package com.devconnor.askthedev.security;
 
 import com.devconnor.askthedev.models.User;
-import com.devconnor.askthedev.services.UserService;
+import com.devconnor.askthedev.services.user.UserService;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

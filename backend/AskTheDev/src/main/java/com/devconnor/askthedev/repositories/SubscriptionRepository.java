@@ -7,6 +7,9 @@ import java.util.UUID;
 
 public interface SubscriptionRepository extends JpaRepository<ATDSubscription, Long> {
     ATDSubscription getSubscriptionByUserId(UUID userId);
+    ATDSubscription getSubscriptionByStripeSubscriptionId(String stripeSubscriptionId);
 
-    ATDSubscription getSubscriptionByCustomerId(String customerId);
+    boolean findByStripeSubscriptionId(String stripeSubscriptionId);
+
+    void deleteByStripeSubscriptionId(String stripeSubscriptionId);
 }

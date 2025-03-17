@@ -6,7 +6,7 @@ import com.devconnor.askthedev.controllers.response.ATDResponse;
 import com.devconnor.askthedev.models.Prompt;
 import com.devconnor.askthedev.repositories.PromptRepository;
 import com.devconnor.askthedev.security.JwtUtil;
-import com.devconnor.askthedev.services.PromptService;
+import com.devconnor.askthedev.services.prompt.PromptService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

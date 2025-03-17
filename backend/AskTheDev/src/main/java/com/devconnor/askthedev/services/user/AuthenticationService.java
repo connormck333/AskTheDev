@@ -1,4 +1,4 @@
-package com.devconnor.askthedev.services;
+package com.devconnor.askthedev.services.user;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.models.User;
