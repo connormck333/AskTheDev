@@ -34,7 +34,7 @@ public class JwtUtil {
         this.userService = userService;
     }
 
-    private String generateJwtToken(String userEmail) {
+    public String generateJwtToken(String userEmail) {
         return Jwts.builder()
                 .setSubject(userEmail)
                 .setIssuedAt(new Date())

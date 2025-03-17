@@ -1,6 +1,7 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
+import com.devconnor.askthedev.exception.InvalidSessionException;
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.security.JwtUtil;
@@ -37,12 +38,15 @@ public class UserController {
             @PathVariable UUID id
     ) {
         UserDTO user = userService.getUserById(id);
-        ATDUserResponse atdUserResponse = validateUserSession(request, user);
-        if (atdUserResponse != null) {
-            return new ResponseEntity<>(atdUserResponse, HttpStatus.UNAUTHORIZED);
+        try {
+            validateUserSession(request, user);
+        } catch (InvalidSessionException e) {
+            ATDUserResponse response = new ATDUserResponse();
+            response.setMessage(INVALID_SESSION_MESSAGE);
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
-        atdUserResponse = new ATDUserResponse();
+        ATDUserResponse atdUserResponse = new ATDUserResponse();
         atdUserResponse.setUser(user);
 
         return ResponseEntity.ok().body(atdUserResponse);
@@ -78,14 +82,9 @@ public class UserController {
         return new ResponseEntity<>(atdUserResponse, HttpStatus.OK);
     }
 
-    private ATDUserResponse validateUserSession(HttpServletRequest request, UserDTO user) {
-        ATDUserResponse atdUserResponse = new ATDUserResponse();
-
+    private void validateUserSession(HttpServletRequest request, UserDTO user) {
         if (!jwtUtil.isSessionValid(request, user.getEmail())) {
-            atdUserResponse.setMessage(INVALID_SESSION_MESSAGE);
-            return atdUserResponse;
+            throw new InvalidSessionException();
         }
-
-        return null;
     }
 }

@@ -8,10 +8,12 @@ import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.services.user.UserService;
 import com.stripe.Stripe;
+import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
+import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -30,6 +32,8 @@ public class StripeService {
     private final EventManager eventManager;
     private final UserRepository userRepository;
 
+    private final String ENDPOINT_SECRET;
+
     public StripeService(
             UserService userService,
             EventManager eventManager,
@@ -40,7 +44,12 @@ public class StripeService {
 
         Dotenv dotenv = Dotenv.configure().load();
         Stripe.apiKey = dotenv.get("STRIPE_API_KEY");
+        this.ENDPOINT_SECRET = dotenv.get("STRIPE_ENDPOINT_SECRET");
         this.userRepository = userRepository;
+    }
+
+    public Event validateAndRetrieveEvent(String stripeSignature, String eventPayload) throws SignatureVerificationException {
+        return Webhook.constructEvent(eventPayload, stripeSignature, ENDPOINT_SECRET);
     }
 
     public String createCheckoutSession(String priceId, UUID userId) throws StripeException {

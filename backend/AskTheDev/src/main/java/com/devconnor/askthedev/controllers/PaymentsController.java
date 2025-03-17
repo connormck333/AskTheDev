@@ -3,34 +3,26 @@ package com.devconnor.askthedev.controllers;
 import com.devconnor.askthedev.controllers.request.PaymentRequest;
 import com.devconnor.askthedev.controllers.response.CheckoutSession;
 import com.devconnor.askthedev.services.payments.StripeService;
-import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
-import com.stripe.net.Webhook;
-import io.github.cdimascio.dotenv.Dotenv;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/payment")
+@RequiredArgsConstructor
 public class PaymentsController {
 
     private final StripeService stripeService;
-    private final String ENDPOINT_SECRET;
 
-    public PaymentsController(StripeService stripeService) {
-        this.stripeService = stripeService;
-        Dotenv dotenv = Dotenv.configure().load();
-        this.ENDPOINT_SECRET = dotenv.get("STRIPE_ENDPOINT_SECRET");
-    }
-
-    @PostMapping("/purchase")
-    public ResponseEntity<String> handlePurchase(
+    @PostMapping("/event")
+    public ResponseEntity<String> handleStripeEvent(
             @RequestBody String payload,
             @RequestHeader("Stripe-Signature") String stripeSig
     ) {
         try {
-            Event event = validateAndRetrieveEvent(stripeSig, payload);
+            Event event = stripeService.validateAndRetrieveEvent(stripeSig, payload);
             stripeService.handleEvent(event);
             return ResponseEntity.ok("Purchase successful");
         } catch (Exception e) {
@@ -48,9 +40,5 @@ public class PaymentsController {
         } catch (StripeException e) {
             return ResponseEntity.status(500).body(null);
         }
-    }
-
-    private Event validateAndRetrieveEvent(String stripeSignature, String eventPayload) throws SignatureVerificationException {
-        return Webhook.constructEvent(eventPayload, stripeSignature, ENDPOINT_SECRET);
     }
 }
