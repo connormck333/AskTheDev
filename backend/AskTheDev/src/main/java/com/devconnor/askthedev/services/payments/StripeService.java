@@ -3,7 +3,6 @@ package com.devconnor.askthedev.services.payments;
 import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
 import com.devconnor.askthedev.models.User;
-import com.devconnor.askthedev.payments.EventManager;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.services.user.UserService;

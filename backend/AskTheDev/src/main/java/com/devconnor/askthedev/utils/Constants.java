@@ -8,6 +8,7 @@ public class Constants {
     public static final int MINIMUM_URL_LENGTH = 5;
     public static final int MAXIMUM_URL_LENGTH = 255;
 
+    public static final String INACTIVE_SUBSCRIPTION_MESSAGE = "Inactive subscription: You must have an active subscription.";
     public static final String INVALID_SESSION_MESSAGE = "Invalid Session";
     public static final String INVALID_PROMPT_MESSAGE = "Invalid Prompt: Please send a valid prompt.";
     public static final String INVALID_WEB_URL_MESSAGE = "Invalid Web URL: Please enter a valid URL.";

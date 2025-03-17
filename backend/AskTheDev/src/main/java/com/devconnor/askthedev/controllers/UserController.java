@@ -67,12 +67,12 @@ public class UserController {
             return new ResponseEntity<>(atdUserResponse, HttpStatus.NOT_FOUND);
         }
 
-        ATDSubscription ATDSubscription = subscriptionService.getSubscriptionByUserId(user.getId());
+        ATDSubscription atdSubscription = subscriptionService.getSubscriptionByUserId(user.getId());
 
         atdUserResponse.setUser(user);
-        atdUserResponse.setActiveSubscription(ATDSubscription != null);
-        if (ATDSubscription != null) {
-            atdUserResponse.setSubscriptionType(ATDSubscription.getType());
+        atdUserResponse.setActiveSubscription(atdSubscription != null && atdSubscription.isActive());
+        if (atdSubscription != null) {
+            atdUserResponse.setSubscriptionType(atdSubscription.getType());
         }
 
         return new ResponseEntity<>(atdUserResponse, HttpStatus.OK);

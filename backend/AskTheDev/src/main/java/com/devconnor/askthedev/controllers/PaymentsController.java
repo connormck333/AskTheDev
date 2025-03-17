@@ -3,7 +3,6 @@ package com.devconnor.askthedev.controllers;
 import com.devconnor.askthedev.controllers.request.PaymentRequest;
 import com.devconnor.askthedev.controllers.response.CheckoutSession;
 import com.devconnor.askthedev.services.payments.StripeService;
-import com.devconnor.askthedev.services.payments.SubscriptionService;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -17,15 +16,10 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentsController {
 
     private final StripeService stripeService;
-    private final SubscriptionService subscriptionService;
     private final String ENDPOINT_SECRET;
 
-    public PaymentsController(
-            StripeService stripeService,
-            SubscriptionService subscriptionService
-    ) {
+    public PaymentsController(StripeService stripeService) {
         this.stripeService = stripeService;
-        this.subscriptionService = subscriptionService;
         Dotenv dotenv = Dotenv.configure().load();
         this.ENDPOINT_SECRET = dotenv.get("STRIPE_ENDPOINT_SECRET");
     }
@@ -34,10 +28,14 @@ public class PaymentsController {
     public ResponseEntity<String> handlePurchase(
             @RequestBody String payload,
             @RequestHeader("Stripe-Signature") String stripeSig
-    ) throws SignatureVerificationException {
-        Event event = validateAndRetrieveEvent(stripeSig, payload);
-        stripeService.handleEvent(event);
-        return ResponseEntity.ok("Purchase successful");
+    ) {
+        try {
+            Event event = validateAndRetrieveEvent(stripeSig, payload);
+            stripeService.handleEvent(event);
+            return ResponseEntity.ok("Purchase successful");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Bad Request");
+        }
     }
 
     @PostMapping("/create-checkout")

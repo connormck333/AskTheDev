@@ -3,8 +3,10 @@ package com.devconnor.askthedev.controllers;
 import com.devconnor.askthedev.controllers.response.ATDPromptListResponse;
 import com.devconnor.askthedev.controllers.response.ATDPromptResponse;
 import com.devconnor.askthedev.controllers.response.ATDResponse;
+import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.Prompt;
 import com.devconnor.askthedev.repositories.PromptRepository;
+import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.services.prompt.PromptService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+import static com.devconnor.askthedev.utils.Constants.INACTIVE_SUBSCRIPTION_MESSAGE;
 import static com.devconnor.askthedev.utils.Constants.INVALID_SESSION_MESSAGE;
 
 @RestController
@@ -23,10 +26,9 @@ import static com.devconnor.askthedev.utils.Constants.INVALID_SESSION_MESSAGE;
 public class PromptController {
 
     private final JwtUtil jwtUtil;
-
     private final PromptService promptService;
-
     private final PromptRepository promptRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     @PostMapping("/{userId}")
     public ResponseEntity<ATDPromptResponse> prompt(
@@ -68,6 +70,17 @@ public class PromptController {
         if (!jwtUtil.isSessionValid(request, userId)) {
             ATDResponse atdPromptResponse = new ATDResponse();
             atdPromptResponse.setMessage(INVALID_SESSION_MESSAGE);
+            return atdPromptResponse;
+        }
+
+        return validateSubscription(userId);
+    }
+
+    private ATDResponse validateSubscription(UUID userId) {
+        ATDSubscription subscription = subscriptionRepository.getSubscriptionByUserId(userId);
+        if (subscription == null || !subscription.isActive()) {
+            ATDResponse atdPromptResponse = new ATDResponse();
+            atdPromptResponse.setMessage(INACTIVE_SUBSCRIPTION_MESSAGE);
             return atdPromptResponse;
         }
 

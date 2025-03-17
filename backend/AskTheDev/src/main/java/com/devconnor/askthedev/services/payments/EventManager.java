@@ -1,4 +1,4 @@
-package com.devconnor.askthedev.payments;
+package com.devconnor.askthedev.services.payments;
 
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
 import com.devconnor.askthedev.exception.InvalidEventException;
@@ -33,12 +33,9 @@ public class EventManager {
     private static final String ACTIVE = "active";
 
     public void handleSubscriptionCreation(Event event) {
-        Subscription subscription = (Subscription) deserializeEvent(event, Subscription.class);
+        Subscription subscription = deserializeEvent(event, Subscription.class);
         String customerId = getCustomerIdFromSubscription(subscription);
-
-        SubscriptionItem subscriptionItem = subscription.getItems().getData().getFirst();
-        String productId = subscriptionItem.getPrice().getProduct();
-        SubscriptionType subscriptionType = SubscriptionType.valueOf(productId);
+        SubscriptionType subscriptionType = deriveSubscriptionType(subscription);
 
         User user = userService.getUserByCustomerId(customerId);
 
@@ -53,11 +50,8 @@ public class EventManager {
     }
 
     public void handleSubscriptionUpdated(Event event) {
-        Subscription subscription = (Subscription) deserializeEvent(event, Subscription.class);
-
-        SubscriptionItem subscriptionItem = subscription.getItems().getData().getFirst();
-        String productId = subscriptionItem.getPrice().getProduct();
-        SubscriptionType subscriptionType = SubscriptionType.valueOf(productId);
+        Subscription subscription = deserializeEvent(event, Subscription.class);
+        SubscriptionType subscriptionType = deriveSubscriptionType(subscription);
 
         // Update subscription type & status
         ATDSubscription atdSubscription = subscriptionRepository.getSubscriptionByStripeSubscriptionId(subscription.getId());
@@ -69,14 +63,14 @@ public class EventManager {
     }
 
     public void handleSubscriptionDeleted(Event event) {
-        Subscription subscription = (Subscription) deserializeEvent(event, Subscription.class);
+        Subscription subscription = deserializeEvent(event, Subscription.class);
         String subscriptionId = subscription.getId();
 
         subscriptionRepository.deleteByStripeSubscriptionId(subscriptionId);
     }
 
     public void handleSuccessfulPayment(Event event) {
-        Invoice invoice = (Invoice) deserializeEvent(event, Invoice.class);
+        Invoice invoice = deserializeEvent(event, Invoice.class);
         String subscriptionId = invoice.getSubscription();
 
         ATDSubscription atdSubscription = subscriptionRepository.getSubscriptionByStripeSubscriptionId(subscriptionId);
@@ -92,7 +86,7 @@ public class EventManager {
     }
 
     public void handleFailedPayment(Event event) {
-        Invoice invoice = (Invoice) deserializeEvent(event, Invoice.class);
+        Invoice invoice = deserializeEvent(event, Invoice.class);
         String subscriptionId = invoice.getSubscription();
 
         ATDSubscription atdSubscription = subscriptionRepository.getSubscriptionByStripeSubscriptionId(subscriptionId);
@@ -115,8 +109,10 @@ public class EventManager {
         pendingEventRepository.save(pendingEvent);
     }
 
-    private Object deserializeEvent(Event event, Class<?> clazz) {
-        return Optional.ofNullable(event.getDataObjectDeserializer().getObject())
+    private <T> T deserializeEvent(Event event, Class<T> clazz) {
+        return event.getDataObjectDeserializer()
+                .getObject()
+                .filter(clazz::isInstance)
                 .map(clazz::cast)
                 .orElseThrow(InvalidEventException::new);
     }
@@ -133,5 +129,11 @@ public class EventManager {
         } catch (StripeException e) {
             throw new SubscriptionNotFoundException();
         }
+    }
+
+    private SubscriptionType deriveSubscriptionType(Subscription subscription) {
+        SubscriptionItem subscriptionItem = subscription.getItems().getData().getFirst();
+        String productId = subscriptionItem.getPrice().getProduct();
+        return SubscriptionType.fromString(productId);
     }
 }

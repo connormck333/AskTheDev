@@ -14,38 +14,22 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
-
     private final PasswordEncoder passwordEncoder;
-
-    private final UserService userService;
-
     private final UserRepository userRepository;
-
     private final JwtUtil jwtUtil;
 
     public ResponseEntity<String> login(HttpServletResponse response, String email, String password) {
         try {
-//            Authentication authReq = UsernamePasswordAuthenticationToken
-//                    .unauthenticated(email, password);
-//            authenticationManager.authenticate(authReq);
-
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
             jwtUtil.saveHttpCookie(response, email);
-
-//        SecurityContextHolder.getContext().setAuthentication(authRes);
-//
-//        HttpSession session = request.getSession();
-//        session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-
             return ResponseEntity.ok("Login successful");
         } catch (AuthenticationException ex) {
             return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
