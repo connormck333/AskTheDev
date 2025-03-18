@@ -1,9 +1,12 @@
 package com.devconnor.askthedev.controllers;
 
+import com.devconnor.askthedev.models.ATDSubscription;
+import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.services.payments.SubscriptionService;
 import com.devconnor.askthedev.services.user.UserService;
 import com.devconnor.askthedev.utils.SecurityTestConfig;
+import com.devconnor.askthedev.utils.SubscriptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NoArgsConstructor;
 import org.junit.Test;
@@ -11,14 +14,19 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
+import static com.devconnor.askthedev.TestConstants.APPLICATION_JSON;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(UserController.class)
@@ -39,11 +47,184 @@ public class UserControllerTest {
     private JwtUtil jwtUtil;
 
     @Test
+    @WithMockUser
     public void testGetUserById_Successful() throws Exception {
         UUID userId = UUID.randomUUID();
+        UserDTO user = createUser(userId);
 
-        when(jwtUtil.isSessionValid(any(HttpServletRequest.class), any(UUID.class))).thenReturn(true);
+        when(jwtUtil.isSessionValid(any(HttpServletRequest.class), eq(user.getEmail()))).thenReturn(true);
+        when(userService.getUserById(any(UUID.class))).thenReturn(user);
 
-        
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/user/%s", userId))
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(userId.toString()))
+                .andExpect(jsonPath("$.email").value(user.getEmail()))
+                .andExpect(jsonPath("$.activeSubscription").value(false))
+                .andExpect(jsonPath("$.subscriptionType").doesNotExist());
+    }
+
+    @Test
+    public void testGetUserById_NotLoggedIn() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/user/%s", userId))
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().is(403));
+    }
+
+    @Test
+    @WithMockUser
+    public void testGetUserById_Unauthorized() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UserDTO user = createUser(UUID.randomUUID());
+
+        when(jwtUtil.isSessionValid(any(HttpServletRequest.class), eq(user.getEmail()))).thenReturn(false);
+        when(userService.getUserById(any(UUID.class))).thenReturn(user);
+
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/user/%s", userId))
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().is(401))
+                .andExpect(jsonPath("$.message").value("Invalid Session"));
+    }
+
+    @Test
+    @WithMockUser
+    public void testGetUserById_UserNotFound() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        when(userService.getUserById(any(UUID.class))).thenReturn(null);
+
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/user/%s", userId))
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("User Not Found"));
+    }
+
+    @Test
+    @WithMockUser
+    public void testGetUserById_InvalidUserId() throws Exception {
+        String invalidUserId = "invalidUserId";
+
+        mockMvc.perform(MockMvcRequestBuilders.get(String.format("/user/%s", invalidUserId))
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    public void testGetCurrentUser_Successful_ActiveSubscription() throws Exception {
+        String token = "sessionToken";
+        UUID userId = UUID.randomUUID();
+        UserDTO user = createUser(userId);
+        ATDSubscription subscription = createActiveSubscription();
+
+        when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
+        when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
+        when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
+        when(subscriptionService.getSubscriptionByUserId(userId)).thenReturn(subscription);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(userId.toString()))
+                .andExpect(jsonPath("$.email").value(user.getEmail()))
+                .andExpect(jsonPath("$.activeSubscription").value(true))
+                .andExpect(jsonPath("$.subscriptionType").value(subscription.getType().toString()));
+    }
+
+    @Test
+    @WithMockUser
+    public void testGetCurrentUser_Successful_NoSubscriptionFound() throws Exception {
+        String token = "sessionToken";
+        UUID userId = UUID.randomUUID();
+        UserDTO user = createUser(userId);
+
+        when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
+        when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
+        when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
+        when(subscriptionService.getSubscriptionByUserId(userId)).thenReturn(null);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(userId.toString()))
+                .andExpect(jsonPath("$.email").value(user.getEmail()))
+                .andExpect(jsonPath("$.activeSubscription").value(false))
+                .andExpect(jsonPath("$.subscriptionType").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser
+    public void testGetCurrentUser_Successful_InactiveSubscription() throws Exception {
+        String token = "sessionToken";
+        UUID userId = UUID.randomUUID();
+        UserDTO user = createUser(userId);
+        ATDSubscription subscription = createActiveSubscription();
+        subscription.setActive(false);
+
+        when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
+        when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
+        when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
+        when(subscriptionService.getSubscriptionByUserId(userId)).thenReturn(subscription);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(userId.toString()))
+                .andExpect(jsonPath("$.email").value(user.getEmail()))
+                .andExpect(jsonPath("$.activeSubscription").value(false))
+                .andExpect(jsonPath("$.subscriptionType").value(subscription.getType().toString()));
+    }
+
+    @Test
+    public void testGetCurrentUser_NotLoggedIn() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().is(403));
+    }
+
+    @Test
+    @WithMockUser
+    public void testGetCurrentUser_UserNotFound() throws Exception {
+        String token = "sessionToken";
+        UUID userId = UUID.randomUUID();
+        UserDTO user = createUser(userId);
+
+        when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
+        when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
+        when(userService.getUserByEmail(user.getEmail())).thenReturn(null);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("User Not Found"));
+    }
+
+    private static UserDTO createUser(UUID userId) {
+        UserDTO user = new UserDTO();
+        user.setId(userId);
+        user.setCustomerId("customerId");
+        user.setEmail("email");
+
+        return user;
+    }
+
+    private static ATDSubscription createActiveSubscription() {
+        ATDSubscription subscription = new ATDSubscription();
+        subscription.setActive(true);
+        subscription.setType(SubscriptionType.BASIC);
+
+        return subscription;
     }
 }

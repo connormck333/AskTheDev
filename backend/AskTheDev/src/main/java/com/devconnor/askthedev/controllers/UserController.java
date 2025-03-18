@@ -2,6 +2,7 @@ package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.exception.InvalidSessionException;
+import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.security.JwtUtil;
@@ -44,6 +45,10 @@ public class UserController {
             ATDUserResponse response = new ATDUserResponse();
             response.setMessage(INVALID_SESSION_MESSAGE);
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        } catch (UserNotFoundException e) {
+            ATDUserResponse response = new ATDUserResponse();
+            response.setMessage(USER_NOT_FOUND);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
         ATDUserResponse atdUserResponse = new ATDUserResponse();
@@ -83,6 +88,9 @@ public class UserController {
     }
 
     private void validateUserSession(HttpServletRequest request, UserDTO user) {
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
         if (!jwtUtil.isSessionValid(request, user.getEmail())) {
             throw new InvalidSessionException();
         }
