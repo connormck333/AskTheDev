@@ -3,12 +3,12 @@ package com.devconnor.askthedev.controllers;
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.models.UserAuthRequest;
 import com.devconnor.askthedev.security.JwtUtil;
+import com.devconnor.askthedev.security.SecurityConfig;
 import com.devconnor.askthedev.services.user.AuthenticationService;
-import com.devconnor.askthedev.utils.SecurityTestConfig;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NoArgsConstructor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -29,9 +29,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(AuthenticationController.class)
-@Import({SecurityTestConfig.class})
+@Import({SecurityConfig.class})
 @NoArgsConstructor
-public class AuthenticationControllerTest {
+class AuthenticationControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -46,7 +46,7 @@ public class AuthenticationControllerTest {
     private static final String VALID_PASSWORD = "password123";
 
     @Test
-    public void testRegister_WithValidEmailAndPassword() throws Exception {
+    void testRegister_WithValidEmailAndPassword() throws Exception {
         ATDUserResponse userResponse = generateUserResponse();
         when(authenticationService.register(any(HttpServletResponse.class), eq(VALID_EMAIL), eq(VALID_PASSWORD))).thenReturn(ResponseEntity.ok(userResponse));
 
@@ -64,7 +64,7 @@ public class AuthenticationControllerTest {
     }
 
     @Test
-    public void testLogin_WithValidEmailAndPassword() throws Exception {
+    void testLogin_WithValidEmailAndPassword() throws Exception {
         when(authenticationService.login(any(HttpServletResponse.class), eq(VALID_EMAIL), eq(VALID_PASSWORD))).thenReturn(ResponseEntity.ok("Login Successful"));
 
         String userAuthRequest = generateUserAuthRequest();

@@ -2,14 +2,12 @@ package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.request.PaymentRequest;
 import com.devconnor.askthedev.security.JwtUtil;
+import com.devconnor.askthedev.security.SecurityConfig;
 import com.devconnor.askthedev.services.payments.StripeService;
-import com.devconnor.askthedev.utils.SecurityTestConfig;
 import com.devconnor.askthedev.utils.SubscriptionType;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.model.Event;
 import lombok.NoArgsConstructor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(PaymentsController.class)
-@Import({SecurityTestConfig.class})
+@Import({SecurityConfig.class})
 @NoArgsConstructor
-public class PaymentsControllerTest {
+class PaymentsControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -56,7 +54,7 @@ public class PaymentsControllerTest {
 
     @Test
     @WithMockUser
-    public void testCreateCheckout() throws Exception {
+    void testCreateCheckout() throws Exception {
         String url = "https://askthedev.com";
         PaymentRequest paymentRequest = createPaymentRequest();
 
@@ -73,7 +71,7 @@ public class PaymentsControllerTest {
     }
 
     @Test
-    public void testCreateCheckoutInvalidUser() throws Exception {
+    void testCreateCheckoutInvalidUser() throws Exception {
         PaymentRequest paymentRequest = createPaymentRequest();
         String body = convertToJson(paymentRequest);
 
@@ -85,7 +83,7 @@ public class PaymentsControllerTest {
     }
 
     @Test
-    public void testStripeEvent_Success() throws Exception {
+    void testStripeEvent_Success() throws Exception {
         when(stripeService.validateAndRetrieveEvent(any(), any())).thenReturn(event);
         doNothing().when(stripeService).handleEvent(any(Event.class));
 
@@ -99,7 +97,7 @@ public class PaymentsControllerTest {
     }
 
     @Test
-    public void testStripeEvent_Failure_MissingStripeSignature() throws Exception {
+    void testStripeEvent_Failure_MissingStripeSignature() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/payment/event")
                         .contentType(APPLICATION_JSON)
                         .content(STRIPE_PAYLOAD)
@@ -108,7 +106,7 @@ public class PaymentsControllerTest {
     }
 
     @Test
-    public void testStripeEvent_Failure_MissingEventPayload() throws Exception {
+    void testStripeEvent_Failure_MissingEventPayload() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/payment/event")
                         .contentType(APPLICATION_JSON)
                         .header("Stripe-Signature", STRIPE_SIGNATURE)

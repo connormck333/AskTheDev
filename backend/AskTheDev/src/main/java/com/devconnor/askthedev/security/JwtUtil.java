@@ -1,7 +1,5 @@
 package com.devconnor.askthedev.security;
 
-import com.devconnor.askthedev.models.UserDTO;
-import com.devconnor.askthedev.services.user.UserService;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -16,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.UUID;
 
 import static com.devconnor.askthedev.utils.Constants.COOKIE_EXPIRATION_TIME;
 
@@ -27,18 +24,20 @@ public class JwtUtil {
     private static final Key JWT_SECRET = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     private final JwtParser jwtParser;
-    private final UserService userService;
 
-    public JwtUtil(UserService userService) {
+    public JwtUtil() {
         jwtParser = Jwts.parserBuilder().setSigningKey(JWT_SECRET).build();
-        this.userService = userService;
     }
 
     public String generateJwtToken(String userEmail) {
+        return generateJwtToken(userEmail, new Date());
+    }
+
+    public String generateJwtToken(String userEmail, Date issuedAt) {
         return Jwts.builder()
                 .setSubject(userEmail)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + COOKIE_EXPIRATION_TIME))
+                .setIssuedAt(issuedAt)
+                .setExpiration(new Date(issuedAt.getTime() + COOKIE_EXPIRATION_TIME))
                 .signWith(SignatureAlgorithm.HS256, JWT_SECRET)
                 .compact();
     }
@@ -52,13 +51,11 @@ public class JwtUtil {
 
         if (token == null) return false;
 
-        return (userEmail.equals(extractUserEmail(token)) && !isTokenExpired(token));
-    }
-
-    public boolean isSessionValid(HttpServletRequest request, UUID userId) {
-        UserDTO user = userService.getUserById(userId);
-
-        return isSessionValid(request, user.getEmail());
+        try {
+            return (userEmail.equalsIgnoreCase(extractUserEmail(token)) && !isTokenExpired(token));
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private boolean isTokenExpired(String token) {
@@ -72,7 +69,6 @@ public class JwtUtil {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-//                .sameSite("None")
                 .maxAge(COOKIE_EXPIRATION_TIME)
                 .build();
 
@@ -89,5 +85,9 @@ public class JwtUtil {
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse(null);
+    }
+
+    public Key getSecret() {
+        return JWT_SECRET;
     }
 }

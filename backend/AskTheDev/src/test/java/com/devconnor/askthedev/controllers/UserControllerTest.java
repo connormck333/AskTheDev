@@ -3,13 +3,13 @@ package com.devconnor.askthedev.controllers;
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.security.JwtUtil;
+import com.devconnor.askthedev.security.SecurityConfig;
 import com.devconnor.askthedev.services.payments.SubscriptionService;
 import com.devconnor.askthedev.services.user.UserService;
-import com.devconnor.askthedev.utils.SecurityTestConfig;
 import com.devconnor.askthedev.utils.SubscriptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NoArgsConstructor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -30,9 +30,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(UserController.class)
-@Import({SecurityTestConfig.class})
+@Import({SecurityConfig.class})
 @NoArgsConstructor
-public class UserControllerTest {
+class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -48,7 +48,7 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetUserById_Successful() throws Exception {
+    void testGetUserById_Successful() throws Exception {
         UUID userId = UUID.randomUUID();
         UserDTO user = createUser(userId);
 
@@ -66,7 +66,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testGetUserById_NotLoggedIn() throws Exception {
+    void testGetUserById_NotLoggedIn() throws Exception {
         UUID userId = UUID.randomUUID();
 
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/user/%s", userId))
@@ -77,7 +77,7 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetUserById_Unauthorized() throws Exception {
+    void testGetUserById_Unauthorized() throws Exception {
         UUID userId = UUID.randomUUID();
         UserDTO user = createUser(UUID.randomUUID());
 
@@ -93,7 +93,7 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetUserById_UserNotFound() throws Exception {
+    void testGetUserById_UserNotFound() throws Exception {
         UUID userId = UUID.randomUUID();
 
         when(userService.getUserById(any(UUID.class))).thenReturn(null);
@@ -107,7 +107,7 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetUserById_InvalidUserId() throws Exception {
+    void testGetUserById_InvalidUserId() throws Exception {
         String invalidUserId = "invalidUserId";
 
         mockMvc.perform(MockMvcRequestBuilders.get(String.format("/user/%s", invalidUserId))
@@ -118,7 +118,7 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetCurrentUser_Successful_ActiveSubscription() throws Exception {
+    void testGetCurrentUser_Successful_ActiveSubscription() throws Exception {
         String token = "sessionToken";
         UUID userId = UUID.randomUUID();
         UserDTO user = createUser(userId);
@@ -141,7 +141,7 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetCurrentUser_Successful_NoSubscriptionFound() throws Exception {
+    void testGetCurrentUser_Successful_NoSubscriptionFound() throws Exception {
         String token = "sessionToken";
         UUID userId = UUID.randomUUID();
         UserDTO user = createUser(userId);
@@ -163,7 +163,7 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetCurrentUser_Successful_InactiveSubscription() throws Exception {
+    void testGetCurrentUser_Successful_InactiveSubscription() throws Exception {
         String token = "sessionToken";
         UUID userId = UUID.randomUUID();
         UserDTO user = createUser(userId);
@@ -186,7 +186,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testGetCurrentUser_NotLoggedIn() throws Exception {
+    void testGetCurrentUser_NotLoggedIn() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
                         .contentType(APPLICATION_JSON)
                 )
@@ -195,7 +195,7 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetCurrentUser_UserNotFound() throws Exception {
+    void testGetCurrentUser_UserNotFound() throws Exception {
         String token = "sessionToken";
         UUID userId = UUID.randomUUID();
         UserDTO user = createUser(userId);

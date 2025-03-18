@@ -7,10 +7,10 @@ import com.devconnor.askthedev.models.Prompt;
 import com.devconnor.askthedev.repositories.PromptRepository;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.security.JwtUtil;
+import com.devconnor.askthedev.security.SecurityConfig;
 import com.devconnor.askthedev.services.prompt.PromptService;
-import com.devconnor.askthedev.utils.SecurityTestConfig;
 import lombok.NoArgsConstructor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -37,9 +37,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(PromptController.class)
-@Import({SecurityTestConfig.class})
+@Import({SecurityConfig.class})
 @NoArgsConstructor
-public class PromptControllerTest {
+class PromptControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -64,7 +64,7 @@ public class PromptControllerTest {
 
     @Test
     @WithMockUser
-    public void testPrompt_Successful() throws Exception {
+    void testPrompt_Successful() throws Exception {
         UUID userId = UUID.randomUUID();
         Prompt prompt = generatePrompt(userId);
         ATDSubscription subscription = generateActiveSubscription(userId);
@@ -90,7 +90,7 @@ public class PromptControllerTest {
     }
 
     @Test
-    public void testPrompt_NotLoggedIn() throws Exception {
+    void testPrompt_NotLoggedIn() throws Exception {
         UUID userId = UUID.randomUUID();
         Prompt prompt = generatePrompt(userId);
 
@@ -105,7 +105,7 @@ public class PromptControllerTest {
 
     @Test
     @WithMockUser
-    public void testPrompt_EmptyBody() throws Exception {
+    void testPrompt_EmptyBody() throws Exception {
         UUID userId = UUID.randomUUID();
         ATDSubscription subscription = generateActiveSubscription(userId);
 
@@ -119,7 +119,7 @@ public class PromptControllerTest {
 
     @Test
     @WithMockUser
-    public void testPrompt_WithoutActiveSubscription() throws Exception {
+    void testPrompt_WithoutActiveSubscription() throws Exception {
         UUID userId = UUID.randomUUID();
         Prompt prompt = generatePrompt(userId);
         String body = convertToJson(prompt);
@@ -133,7 +133,7 @@ public class PromptControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetPrompts_Successful() throws Exception {
+    void testGetPrompts_Successful() throws Exception {
         UUID userId = UUID.randomUUID();
         ATDSubscription subscription = generateActiveSubscription(userId);
         ATDPromptListResponse response = generatePromptListResponse(userId);
@@ -152,7 +152,7 @@ public class PromptControllerTest {
     }
 
     @Test
-    public void testGetPrompts_NotLoggedIn() throws Exception {
+    void testGetPrompts_NotLoggedIn() throws Exception {
         UUID userId = UUID.randomUUID();
         mockMvc.perform(MockMvcRequestBuilders.get("/prompt/retrieve")
                         .queryParam(USER_ID_PARAM, userId.toString())
@@ -164,7 +164,7 @@ public class PromptControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetPrompts_MissingUserId() throws Exception {
+    void testGetPrompts_MissingUserId() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/prompt/retrieve")
                         .queryParam(WEB_URL_PARAM, WEB_URL)
                         .queryParam(MIN_PAGE_PARAM, "1")
@@ -174,7 +174,7 @@ public class PromptControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetPrompts_MissingWebUrl() throws Exception {
+    void testGetPrompts_MissingWebUrl() throws Exception {
         UUID userId = UUID.randomUUID();
 
         mockMvc.perform(MockMvcRequestBuilders.get("/prompt/retrieve")
@@ -186,7 +186,7 @@ public class PromptControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetPrompts_MissingMinPage() throws Exception {
+    void testGetPrompts_MissingMinPage() throws Exception {
         UUID userId = UUID.randomUUID();
 
         mockMvc.perform(MockMvcRequestBuilders.get("/prompt/retrieve")
@@ -198,7 +198,7 @@ public class PromptControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetPrompts_InvalidMinPage() throws Exception {
+    void testGetPrompts_InvalidMinPage() throws Exception {
         UUID userId = UUID.randomUUID();
 
         mockMvc.perform(MockMvcRequestBuilders.get("/prompt/retrieve")
@@ -211,7 +211,7 @@ public class PromptControllerTest {
 
     @Test
     @WithMockUser
-    public void testGetPrompts_WithoutActiveSubscription() throws Exception {
+    void testGetPrompts_WithoutActiveSubscription() throws Exception {
         UUID userId = UUID.randomUUID();
 
         mockMvc.perform(MockMvcRequestBuilders.get("/prompt/retrieve")
