@@ -42,10 +42,10 @@ public class PromptController {
 
         prompt.setUserId(userId);
 
-        ResponseEntity<ATDPromptResponse> response = promptService.sendPromptToOpenAI(prompt);
+        ATDPromptResponse response = promptService.sendPromptToOpenAI(prompt);
         savePrompt(prompt);
 
-        return response;
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/retrieve")
@@ -62,7 +62,9 @@ public class PromptController {
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
-        return promptService.getPrompts(webUrl, id, minPage);
+        ATDPromptListResponse response = promptService.getPrompts(webUrl, id, minPage);
+
+        return ResponseEntity.ok(response);
     }
 
     private void validateSubscription(UUID userId) {

@@ -26,7 +26,7 @@ public class PendingEventProcessor {
 
     private static final int TEN_MINUTES = 600000;
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = TEN_MINUTES)
     public void processPendingEvents() {
         List<PendingEvent> pendingEvents = pendingEventRepository.findAll();
 

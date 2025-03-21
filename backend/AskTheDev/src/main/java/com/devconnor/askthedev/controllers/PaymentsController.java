@@ -2,6 +2,7 @@ package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.request.PaymentRequest;
 import com.devconnor.askthedev.controllers.response.CheckoutSession;
+import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.services.payments.StripeService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
@@ -37,7 +38,7 @@ public class PaymentsController {
         try {
             String url = stripeService.createCheckoutSession("price_1R2gpoIW6fDMtSqJFfgdq3ls", paymentRequest.getUserId());
             return ResponseEntity.ok(new CheckoutSession(url));
-        } catch (StripeException e) {
+        } catch (ATDException e) {
             return ResponseEntity.status(500).body(null);
         }
     }

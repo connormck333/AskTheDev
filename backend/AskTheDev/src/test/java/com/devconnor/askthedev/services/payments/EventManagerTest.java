@@ -11,8 +11,8 @@ import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.services.user.UserService;
 import com.devconnor.askthedev.utils.SubscriptionType;
 import com.stripe.Stripe;
-import com.stripe.exception.StripeException;
 import com.stripe.model.*;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,19 +25,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.devconnor.askthedev.utils.Utils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EventManagerTest {
-
-    private static final String SUBSCRIPTION_ID = "subscriptionId";
-    private static final String CUSTOMER_ID = "customerId";
-    private static final String EVENT_ID = "eventId";
-    private static final String EVENT_JSON = "eventJson";
-    private static final UUID USER_ID = UUID.randomUUID();
-    private static final String ACTIVE = "active";
-    private static final String INACTIVE = "inactive";
 
     private EventManager eventManager;
 
@@ -65,9 +58,15 @@ class EventManagerTest {
         mockedSubscription = mockStatic(Subscription.class);
     }
 
+    @AfterEach
+    void tearDown() {
+        mockedSubscription.close();
+    }
+
     @Test
     void testHandleSubscriptionCreation_Successful() {
-        UserDTO user = createUserDTO();
+        UUID userId = UUID.randomUUID();
+        UserDTO user = createUserDTO(userId);
         Subscription subscription = createSubscription();
 
         when(mockedEvent.getDataObjectDeserializer()).thenReturn(eventDataObjectDeserializer);
@@ -81,7 +80,7 @@ class EventManagerTest {
 
         ATDSubscription atdSubscription = subscriptionCaptor.getValue();
         assertEquals(SUBSCRIPTION_ID, atdSubscription.getStripeSubscriptionId());
-        assertEquals(USER_ID, atdSubscription.getUserId());
+        assertEquals(userId, atdSubscription.getUserId());
         assertEquals(SubscriptionType.BASIC, atdSubscription.getType());
         assertEquals(ACTIVE, atdSubscription.getStatus());
         assertTrue(atdSubscription.isActive());
@@ -111,7 +110,8 @@ class EventManagerTest {
     @Test
     void testHandleSubscriptionUpdated_Successful_ChangedType() {
         Subscription subscription = createSubscription();
-        ATDSubscription atdSubscription = createATDSubscription();
+        UUID userId = UUID.randomUUID();
+        ATDSubscription atdSubscription = createATDSubscription(userId);
 
         when(mockedEvent.getDataObjectDeserializer()).thenReturn(eventDataObjectDeserializer);
         when(eventDataObjectDeserializer.getObject()).thenReturn(Optional.of(subscription));
@@ -125,7 +125,7 @@ class EventManagerTest {
         ATDSubscription savedSubscription = subscriptionCaptor.getValue();
 
         assertEquals(SUBSCRIPTION_ID, savedSubscription.getStripeSubscriptionId());
-        assertEquals(USER_ID, savedSubscription.getUserId());
+        assertEquals(userId, savedSubscription.getUserId());
         assertEquals(SubscriptionType.BASIC, savedSubscription.getType());
         assertEquals(ACTIVE, savedSubscription.getStatus());
         assertTrue(savedSubscription.isActive());
@@ -135,7 +135,8 @@ class EventManagerTest {
     void testHandleSubscriptionUpdated_Successful_ChangedStatus() {
         Subscription subscription = createSubscription();
         subscription.setStatus(INACTIVE);
-        ATDSubscription atdSubscription = createATDSubscription();
+        UUID userId = UUID.randomUUID();
+        ATDSubscription atdSubscription = createATDSubscription(userId);
 
         when(mockedEvent.getDataObjectDeserializer()).thenReturn(eventDataObjectDeserializer);
         when(eventDataObjectDeserializer.getObject()).thenReturn(Optional.of(subscription));
@@ -149,7 +150,7 @@ class EventManagerTest {
         ATDSubscription savedSubscription = subscriptionCaptor.getValue();
 
         assertEquals(SUBSCRIPTION_ID, savedSubscription.getStripeSubscriptionId());
-        assertEquals(USER_ID, savedSubscription.getUserId());
+        assertEquals(userId, savedSubscription.getUserId());
         assertEquals(SubscriptionType.BASIC, savedSubscription.getType());
         assertEquals(INACTIVE, savedSubscription.getStatus());
         assertFalse(savedSubscription.isActive());
@@ -212,7 +213,8 @@ class EventManagerTest {
     @Test
     void testHandleSuccessfulPayment_Successful() {
         Invoice invoice = createInvoice();
-        ATDSubscription atdSubscription = createATDSubscription();
+        UUID userId = UUID.randomUUID();
+        ATDSubscription atdSubscription = createATDSubscription(userId);
 
         when(mockedEvent.getDataObjectDeserializer()).thenReturn(eventDataObjectDeserializer);
         when(eventDataObjectDeserializer.getObject()).thenReturn(Optional.of(invoice));
@@ -225,7 +227,7 @@ class EventManagerTest {
 
         ATDSubscription savedSubscription = invoiceCaptor.getValue();
         assertEquals(SUBSCRIPTION_ID, savedSubscription.getStripeSubscriptionId());
-        assertEquals(USER_ID, savedSubscription.getUserId());
+        assertEquals(userId, savedSubscription.getUserId());
         assertEquals(SubscriptionType.PRO, savedSubscription.getType());
         assertEquals(ACTIVE, savedSubscription.getStatus());
         assertTrue(savedSubscription.isActive());
@@ -267,7 +269,8 @@ class EventManagerTest {
         Invoice invoice = createInvoice();
         Subscription subscription = createSubscription();
         subscription.setStatus(INACTIVE);
-        ATDSubscription atdSubscription = createATDSubscription();
+        UUID userId = UUID.randomUUID();
+        ATDSubscription atdSubscription = createATDSubscription(userId);
 
         when(mockedEvent.getDataObjectDeserializer()).thenReturn(eventDataObjectDeserializer);
         when(eventDataObjectDeserializer.getObject()).thenReturn(Optional.of(invoice));
@@ -281,7 +284,7 @@ class EventManagerTest {
 
         ATDSubscription savedSubscription = invoiceCaptor.getValue();
         assertEquals(SUBSCRIPTION_ID, savedSubscription.getStripeSubscriptionId());
-        assertEquals(USER_ID, savedSubscription.getUserId());
+        assertEquals(userId, savedSubscription.getUserId());
         assertEquals(SubscriptionType.PRO, savedSubscription.getType());
         assertEquals(INACTIVE, savedSubscription.getStatus());
         assertFalse(savedSubscription.isActive());
@@ -311,7 +314,8 @@ class EventManagerTest {
     @Test
     void testHandleFailedPayment_FailedToGetSubscriptionStatus() {
         Invoice invoice = createInvoice();
-        ATDSubscription atdSubscription = createATDSubscription();
+        UUID userId = UUID.randomUUID();
+        ATDSubscription atdSubscription = createATDSubscription(userId);
 
         when(mockedEvent.getDataObjectDeserializer()).thenReturn(eventDataObjectDeserializer);
         when(eventDataObjectDeserializer.getObject()).thenReturn(Optional.of(invoice));
@@ -324,7 +328,8 @@ class EventManagerTest {
     @Test
     void testHandleFailedPayment_SubscriptionStatusNotFound() {
         Invoice invoice = createInvoice();
-        ATDSubscription atdSubscription = createATDSubscription();
+        UUID userId = UUID.randomUUID();
+        ATDSubscription atdSubscription = createATDSubscription(userId);
 
         when(mockedEvent.getDataObjectDeserializer()).thenReturn(eventDataObjectDeserializer);
         when(eventDataObjectDeserializer.getObject()).thenReturn(Optional.of(invoice));
@@ -334,10 +339,10 @@ class EventManagerTest {
         assertThrows(SubscriptionNotFoundException.class, () -> eventManager.handleFailedPayment(mockedEvent));
     }
 
-    private static UserDTO createUserDTO() {
+    private static UserDTO createUserDTO(UUID userId) {
         UserDTO user = new UserDTO();
         user.setCustomerId(CUSTOMER_ID);
-        user.setId(USER_ID);
+        user.setId(userId);
 
         return user;
     }
@@ -360,17 +365,6 @@ class EventManagerTest {
         subscription.setItems(collection);
 
         return subscription;
-    }
-
-    private static ATDSubscription createATDSubscription() {
-        ATDSubscription atdSubscription = new ATDSubscription();
-        atdSubscription.setUserId(USER_ID);
-        atdSubscription.setStripeSubscriptionId(SUBSCRIPTION_ID);
-        atdSubscription.setType(SubscriptionType.PRO);
-        atdSubscription.setStatus(ACTIVE);
-        atdSubscription.setActive(true);
-
-        return atdSubscription;
     }
 
     private static Invoice createInvoice() {

@@ -5,9 +5,10 @@ import com.devconnor.askthedev.exception.InvalidSessionException;
 import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.UserDTO;
+import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.security.JwtUtil;
-import com.devconnor.askthedev.services.payments.SubscriptionService;
 import com.devconnor.askthedev.services.user.UserService;
+import com.stripe.service.SubscriptionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +29,8 @@ import static com.devconnor.askthedev.utils.Constants.USER_NOT_FOUND;
 public class UserController {
 
     private final UserService userService;
-
-    private final SubscriptionService subscriptionService;
-
     private final JwtUtil jwtUtil;
+    private final SubscriptionRepository subscriptionRepository;
 
     @GetMapping("/{id}")
     public ResponseEntity<ATDUserResponse> getUserById(
@@ -76,7 +75,7 @@ public class UserController {
             return new ResponseEntity<>(atdUserResponse, HttpStatus.NOT_FOUND);
         }
 
-        ATDSubscription atdSubscription = subscriptionService.getSubscriptionByUserId(user.getId());
+        ATDSubscription atdSubscription = subscriptionRepository.getSubscriptionByUserId(user.getId());
 
         atdUserResponse.setUser(user);
         atdUserResponse.setActiveSubscription(atdSubscription != null && atdSubscription.isActive());

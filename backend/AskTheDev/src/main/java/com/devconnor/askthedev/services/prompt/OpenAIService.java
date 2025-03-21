@@ -1,5 +1,6 @@
 package com.devconnor.askthedev.services.prompt;
 
+import com.devconnor.askthedev.exception.InvalidPromptException;
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
 import com.openai.models.*;
@@ -14,6 +15,10 @@ public class OpenAIService {
     private static final String MODEL_NAME = "gpt-4o-mini";
 
     private final OpenAIClient openAIClient;
+
+    public OpenAIService(OpenAIClient openAIClient) {
+        this.openAIClient = openAIClient;
+    }
 
     public OpenAIService() {
         Dotenv dotenv = Dotenv.configure().load();
@@ -48,7 +53,12 @@ public class OpenAIService {
                 .model(MODEL_NAME)
                 .build();
 
-        ChatCompletion chatCompletion = openAIClient.chat().completions().create(params);
+        ChatCompletion chatCompletion;
+        try {
+            chatCompletion = openAIClient.chat().completions().create(params);
+        } catch (Exception e) {
+            throw new InvalidPromptException();
+        }
 
         return getResponse(chatCompletion.choices());
     }
@@ -62,6 +72,6 @@ public class OpenAIService {
             return choices.getFirst().message().content().get();
         }
 
-        return null;
+        throw new InvalidPromptException();
     }
 }

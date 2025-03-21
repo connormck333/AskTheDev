@@ -2,9 +2,8 @@ package com.devconnor.askthedev.services.payments;
 
 import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
+import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.User;
-import com.devconnor.askthedev.models.UserDTO;
-import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.services.user.UserService;
 import com.stripe.Stripe;
@@ -52,27 +51,35 @@ public class StripeService {
         return Webhook.constructEvent(eventPayload, stripeSignature, ENDPOINT_SECRET);
     }
 
-    public String createCheckoutSession(String priceId, UUID userId) throws StripeException {
+    public String createCheckoutSession(String priceId, UUID userId) {
         Customer customer = getCustomer(userId);
-        SessionCreateParams params = SessionCreateParams.builder()
-                .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
-                .setSuccessUrl("https://lesson-link.co.uk")
-                .setCancelUrl("https://lesson-link.co.uk")
-                .setCustomer(customer.getId())
-                .addLineItem(SessionCreateParams.LineItem.builder()
-                        .setQuantity(1L)
-                        .setPrice(priceId)
-                        .build())
-                .putMetadata("user_id", userId.toString())
-                .build();
 
-        Session session = Session.create(params);
-        return session.getUrl();
+        try {
+            SessionCreateParams params = SessionCreateParams.builder()
+                    .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
+                    .setSuccessUrl("https://lesson-link.co.uk")
+                    .setCancelUrl("https://lesson-link.co.uk")
+                    .setCustomer(customer.getId())
+                    .addLineItem(SessionCreateParams.LineItem.builder()
+                            .setQuantity(1L)
+                            .setPrice(priceId)
+                            .build())
+                    .putMetadata("user_id", userId.toString())
+                    .build();
+
+            Session session = Session.create(params);
+
+            return session.getUrl();
+        } catch (StripeException e) {
+            throw new ATDException();
+        }
     }
 
     private Customer getCustomer(UUID userId) {
         User user = userService.findById(userId);
-        if (user.getCustomerId() == null) {
+        if (user == null) {
+            throw new UserNotFoundException();
+        } else if (user.getCustomerId() == null) {
             return createCustomer(user);
         }
 
@@ -84,10 +91,6 @@ public class StripeService {
     }
 
     private Customer createCustomer(User user) {
-        if (user == null || user.getCustomerId() != null) {
-            throw new ATDException();
-        }
-
         Map<String, String> metadata = new HashMap<>();
         metadata.put("user_id", String.valueOf(user.getId()));
 

@@ -2,21 +2,22 @@ package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.UserDTO;
+import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.security.SecurityConfig;
-import com.devconnor.askthedev.services.payments.SubscriptionService;
 import com.devconnor.askthedev.services.user.UserService;
 import com.devconnor.askthedev.utils.SubscriptionType;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(UserController.class)
 @Import({SecurityConfig.class})
 @NoArgsConstructor
@@ -41,10 +42,13 @@ class UserControllerTest {
     private UserService userService;
 
     @MockitoBean
-    private SubscriptionService subscriptionService;
+    private JwtUtil jwtUtil;
 
     @MockitoBean
-    private JwtUtil jwtUtil;
+    private SubscriptionRepository subscriptionRepository;
+
+    @MockitoBean
+    private AuthenticationManager authenticationManager;
 
     @Test
     @WithMockUser
@@ -127,7 +131,7 @@ class UserControllerTest {
         when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
         when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
         when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
-        when(subscriptionService.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
                         .contentType(APPLICATION_JSON)
@@ -149,7 +153,7 @@ class UserControllerTest {
         when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
         when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
         when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
-        when(subscriptionService.getSubscriptionByUserId(userId)).thenReturn(null);
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(null);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
                         .contentType(APPLICATION_JSON)
@@ -173,7 +177,7 @@ class UserControllerTest {
         when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
         when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
         when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
-        when(subscriptionService.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
                         .contentType(APPLICATION_JSON)

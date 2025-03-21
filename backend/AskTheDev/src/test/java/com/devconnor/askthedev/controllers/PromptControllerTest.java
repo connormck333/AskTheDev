@@ -11,14 +11,15 @@ import com.devconnor.askthedev.security.SecurityConfig;
 import com.devconnor.askthedev.services.prompt.PromptService;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @WebMvcTest(PromptController.class)
 @Import({SecurityConfig.class})
 @NoArgsConstructor
@@ -56,6 +57,9 @@ class PromptControllerTest {
     @MockitoBean
     private JwtUtil jwtUtil;
 
+    @MockitoBean
+    private AuthenticationManager authenticationManager;
+
     private static final String USER_ID_PARAM = "id";
     private static final String WEB_URL_PARAM = "webUrl";
     private static final String MIN_PAGE_PARAM = "minPage";
@@ -71,7 +75,7 @@ class PromptControllerTest {
         ATDPromptResponse promptResponse = generatePromptResponse(prompt);
 
         when(subscriptionRepository.getSubscriptionByUserId(any(UUID.class))).thenReturn(subscription);
-        when(promptService.sendPromptToOpenAI(any(Prompt.class))).thenReturn(ResponseEntity.ok(promptResponse));
+        when(promptService.sendPromptToOpenAI(any(Prompt.class))).thenReturn(promptResponse);
 
         String body = convertToJson(prompt);
 
@@ -139,7 +143,7 @@ class PromptControllerTest {
         ATDPromptListResponse response = generatePromptListResponse(userId);
 
         when(subscriptionRepository.getSubscriptionByUserId(any(UUID.class))).thenReturn(subscription);
-        when(promptService.getPrompts(any(), any(UUID.class), anyInt())).thenReturn(ResponseEntity.ok(response));
+        when(promptService.getPrompts(any(), any(UUID.class), anyInt())).thenReturn(response);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/prompt/retrieve")
                         .queryParam(USER_ID_PARAM, userId.toString())
