@@ -11,10 +11,7 @@ import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.services.user.UserService;
 import com.devconnor.askthedev.utils.SubscriptionType;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Event;
-import com.stripe.model.Invoice;
-import com.stripe.model.Subscription;
-import com.stripe.model.SubscriptionItem;
+import com.stripe.model.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,6 +35,9 @@ public class EventManager {
         SubscriptionType subscriptionType = deriveSubscriptionType(subscription);
 
         UserDTO user = userService.getUserByCustomerId(customerId);
+        if (user == null) {
+            throw new CustomerNotFoundException();
+        }
 
         ATDSubscription atdSubscription = new ATDSubscription();
         atdSubscription.setStripeSubscriptionId(subscription.getId());
@@ -55,6 +55,10 @@ public class EventManager {
 
         // Update subscription type & status
         ATDSubscription atdSubscription = subscriptionRepository.getSubscriptionByStripeSubscriptionId(subscription.getId());
+        if (atdSubscription == null) {
+            throw new SubscriptionNotFoundException();
+        }
+
         atdSubscription.setType(subscriptionType);
         atdSubscription.setActive(subscription.getStatus().equalsIgnoreCase(ACTIVE));
         atdSubscription.setStatus(subscription.getStatus());
@@ -65,6 +69,11 @@ public class EventManager {
     public void handleSubscriptionDeleted(Event event) {
         Subscription subscription = deserializeEvent(event, Subscription.class);
         String subscriptionId = subscription.getId();
+
+        ATDSubscription foundAtdSubscription = subscriptionRepository.getSubscriptionByStripeSubscriptionId(subscriptionId);
+        if (foundAtdSubscription == null) {
+            throw new SubscriptionNotFoundException();
+        }
 
         subscriptionRepository.deleteByStripeSubscriptionId(subscriptionId);
     }
@@ -92,7 +101,7 @@ public class EventManager {
         ATDSubscription atdSubscription = subscriptionRepository.getSubscriptionByStripeSubscriptionId(subscriptionId);
         if (atdSubscription == null) {
             log.info("No subscription found by id {}", subscriptionId);
-            return;
+            throw new SubscriptionNotFoundException();
         }
 
         atdSubscription.setActive(false);
@@ -115,6 +124,7 @@ public class EventManager {
                 .filter(clazz::isInstance)
                 .map(clazz::cast)
                 .orElseThrow(InvalidEventException::new);
+
     }
 
     private String getCustomerIdFromSubscription(Subscription subscription) {
@@ -126,7 +136,7 @@ public class EventManager {
         try {
             Subscription subscription = Subscription.retrieve(subscriptionId);
             return subscription.getStatus();
-        } catch (StripeException e) {
+        } catch (StripeException | NullPointerException e) {
             throw new SubscriptionNotFoundException();
         }
     }
