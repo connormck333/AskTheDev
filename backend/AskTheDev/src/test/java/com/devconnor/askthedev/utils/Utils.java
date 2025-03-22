@@ -1,6 +1,8 @@
 package com.devconnor.askthedev.utils;
 
 import com.devconnor.askthedev.models.ATDSubscription;
+import com.devconnor.askthedev.models.User;
+import com.devconnor.askthedev.models.UserDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -10,9 +12,12 @@ import java.util.UUID;
 
 public class Utils {
 
+    public static final String EXCEPTION_PREFIX = "[ATD] ERROR: %s";
+    public static final String APPLICATION_JSON = "application/json";
     public static final String SUBSCRIPTION_ID = "subscriptionId";
     public static final String CUSTOMER_ID = "customerId";
     public static final String EMAIL = "email";
+    public static final String PASSWORD = "password";
     public static final String EVENT_ID = "eventId";
     public static final String EVENT_JSON = "eventJson";
     public static final String ACTIVE = "active";
@@ -39,6 +44,24 @@ public class Utils {
         atdSubscription.setActive(true);
 
         return atdSubscription;
+    }
+
+    public static User createUser(UUID userId) {
+        User user = new User();
+        user.setId(userId);
+        user.setCustomerId(CUSTOMER_ID);
+        user.setEmail(EMAIL);
+
+        return user;
+    }
+
+    public static UserDTO createUserDTO(UUID userId) {
+        UserDTO user = new UserDTO();
+        user.setEmail(EMAIL);
+        user.setCustomerId(CUSTOMER_ID);
+        user.setId(userId);
+
+        return user;
     }
 
     public static String generateRandomString(int length) {

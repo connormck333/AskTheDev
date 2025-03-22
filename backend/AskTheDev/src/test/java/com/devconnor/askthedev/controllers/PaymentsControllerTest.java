@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.UUID;
 
-import static com.devconnor.askthedev.TestConstants.APPLICATION_JSON;
+import static com.devconnor.askthedev.utils.Utils.APPLICATION_JSON;
 import static com.devconnor.askthedev.utils.Utils.convertToJson;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;

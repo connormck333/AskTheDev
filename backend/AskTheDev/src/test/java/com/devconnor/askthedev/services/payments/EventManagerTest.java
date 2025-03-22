@@ -342,14 +342,6 @@ class EventManagerTest {
         assertThrows(SubscriptionNotFoundException.class, () -> eventManager.handleFailedPayment(mockedEvent));
     }
 
-    private static UserDTO createUserDTO(UUID userId) {
-        UserDTO user = new UserDTO();
-        user.setCustomerId(CUSTOMER_ID);
-        user.setId(userId);
-
-        return user;
-    }
-
     private static Subscription createSubscription() {
         Subscription subscription = new Subscription();
         subscription.setId(SUBSCRIPTION_ID);

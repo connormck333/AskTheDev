@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static com.devconnor.askthedev.TestConstants.EXCEPTION_PREFIX;
+import static com.devconnor.askthedev.utils.Utils.EXCEPTION_PREFIX;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InvalidUserIdExceptionTest {

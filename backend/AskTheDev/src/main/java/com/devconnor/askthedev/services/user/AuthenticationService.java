@@ -1,6 +1,7 @@
 package com.devconnor.askthedev.services.user;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
+import com.devconnor.askthedev.exception.ExistingUsernameException;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.security.JwtUtil;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,24 +25,22 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
-    public ResponseEntity<String> login(HttpServletResponse response, String email, String password) {
+    public boolean login(HttpServletResponse response, String email, String password) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
             jwtUtil.saveHttpCookie(response, email);
-            return ResponseEntity.ok("Login successful");
-        } catch (AuthenticationException ex) {
-            return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+            return true;
+        } catch (Exception ex) {
+            throw new BadCredentialsException("Invalid email or password");
         }
     }
 
-    public ResponseEntity<ATDUserResponse> register(HttpServletResponse response, String email, String password) {
+    public ATDUserResponse register(HttpServletResponse response, String email, String password) {
         if (userRepository.existsUserByEmail(email)) {
-            ATDUserResponse atdUserResponse = new ATDUserResponse();
-            atdUserResponse.setMessage("User already exists.");
-            return new ResponseEntity<>(atdUserResponse, HttpStatus.CONFLICT);
+            throw new ExistingUsernameException();
         }
 
         User user = new User();
@@ -56,6 +56,6 @@ public class AuthenticationService {
         atdUserResponse.setEmail(savedUser.getEmail());
         atdUserResponse.setMessage("User registered successfully.");
 
-        return new ResponseEntity<>(atdUserResponse, HttpStatus.CREATED);
+        return atdUserResponse;
     }
 }

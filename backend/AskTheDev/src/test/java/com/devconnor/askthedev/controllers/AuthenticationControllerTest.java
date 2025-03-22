@@ -13,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -22,7 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.UUID;
 
-import static com.devconnor.askthedev.TestConstants.APPLICATION_JSON;
+import static com.devconnor.askthedev.utils.Utils.APPLICATION_JSON;
 import static com.devconnor.askthedev.utils.Utils.convertToJson;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -52,7 +51,7 @@ class AuthenticationControllerTest {
     @Test
     void testRegister_WithValidEmailAndPassword() throws Exception {
         ATDUserResponse userResponse = generateUserResponse();
-        when(authenticationService.register(any(HttpServletResponse.class), eq(VALID_EMAIL), eq(VALID_PASSWORD))).thenReturn(ResponseEntity.ok(userResponse));
+        when(authenticationService.register(any(HttpServletResponse.class), eq(VALID_EMAIL), eq(VALID_PASSWORD))).thenReturn(userResponse);
 
         String body = generateUserAuthRequest();
 
@@ -60,7 +59,7 @@ class AuthenticationControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(body)
                 )
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.email").value(VALID_EMAIL))
                 .andExpect(jsonPath("$.userId").exists())
                 .andExpect(jsonPath("$.activeSubscription").value(false))
@@ -69,7 +68,7 @@ class AuthenticationControllerTest {
 
     @Test
     void testLogin_WithValidEmailAndPassword() throws Exception {
-        when(authenticationService.login(any(HttpServletResponse.class), eq(VALID_EMAIL), eq(VALID_PASSWORD))).thenReturn(ResponseEntity.ok("Login Successful"));
+        when(authenticationService.login(any(HttpServletResponse.class), eq(VALID_EMAIL), eq(VALID_PASSWORD))).thenReturn(true);
 
         String userAuthRequest = generateUserAuthRequest();
 

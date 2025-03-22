@@ -2,7 +2,6 @@ package com.devconnor.askthedev.services.payments;
 
 import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
-import com.devconnor.askthedev.exception.InvalidEventException;
 import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
@@ -24,8 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
-import static com.devconnor.askthedev.utils.Utils.CUSTOMER_ID;
-import static com.devconnor.askthedev.utils.Utils.EMAIL;
+import static com.devconnor.askthedev.utils.Utils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -175,14 +173,5 @@ class StripeServiceTest {
         mockedStaticSession.when(() -> Session.create(any(SessionCreateParams.class))).thenThrow(ATDException.class);
 
         assertThrows(ATDException.class, () -> stripeService.createCheckoutSession(PRICE_ID, userId));
-    }
-
-    private static User createUser(UUID userId) {
-        User user = new User();
-        user.setId(userId);
-        user.setCustomerId(CUSTOMER_ID);
-        user.setEmail(EMAIL);
-
-        return user;
     }
 }
