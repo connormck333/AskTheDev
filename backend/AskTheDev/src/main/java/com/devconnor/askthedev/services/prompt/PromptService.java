@@ -3,9 +3,7 @@ package com.devconnor.askthedev.services.prompt;
 import com.devconnor.askthedev.controllers.response.ATDPromptListResponse;
 import com.devconnor.askthedev.controllers.response.ATDPromptResponse;
 import com.devconnor.askthedev.controllers.response.ATDResponse;
-import com.devconnor.askthedev.exception.InvalidPromptException;
-import com.devconnor.askthedev.exception.PromptLimitReachedException;
-import com.devconnor.askthedev.exception.SubscriptionNotFoundException;
+import com.devconnor.askthedev.exception.*;
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.Prompt;
 import com.devconnor.askthedev.repositories.PromptRepository;
@@ -35,10 +33,26 @@ public class PromptService {
         if (!isValidPromptRequest(atdPromptResponse, prompt) || !isValidWebUrl(atdPromptResponse, prompt.getWebUrl())) {
             throw new InvalidPromptException();
         }
-        validateUserSubscription(prompt.getUserId());
+        validateUserSubscription(prompt.getUserId(), false);
 
         prompt.setOpenAIResponse(
                 openAIService.sendPrompt(prompt.getPageContent(), prompt.getUserPrompt())
+        );
+
+        atdPromptResponse.setPrompt(prompt);
+        return atdPromptResponse;
+    }
+
+    public ATDPromptResponse summariseWebPage(Prompt prompt) {
+        ATDPromptResponse atdPromptResponse = new ATDPromptResponse();
+        if (!isValidWebUrl(atdPromptResponse, prompt.getWebUrl())) {
+            throw new InvalidPromptException();
+        }
+
+        validateUserSubscription(prompt.getUserId(), true);
+
+        prompt.setOpenAIResponse(
+                openAIService.summariseWebPage(prompt.getPageContent())
         );
 
         atdPromptResponse.setPrompt(prompt);
@@ -59,10 +73,17 @@ public class PromptService {
         return atdPromptListResponse;
     }
 
-    private void validateUserSubscription(UUID userId) {
+    private void validateUserSubscription(UUID userId, boolean expectedPro) {
         ATDSubscription subscription = subscriptionRepository.getSubscriptionByUserId(userId);
-        if (subscription == null || !subscription.isActive()) {
+        if (
+                subscription == null
+                || !subscription.isActive()
+        ) {
             throw new SubscriptionNotFoundException();
+        }
+
+        if (expectedPro && subscription.getType() != SubscriptionType.PRO) {
+            throw new InvalidSubscriptionException();
         }
 
         validateUserPromptsAmount(userId, subscription.getType());

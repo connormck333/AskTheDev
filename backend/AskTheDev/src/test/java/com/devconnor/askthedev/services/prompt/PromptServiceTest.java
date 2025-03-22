@@ -2,6 +2,7 @@ package com.devconnor.askthedev.services.prompt;
 
 import com.devconnor.askthedev.controllers.response.ATDPromptListResponse;
 import com.devconnor.askthedev.exception.InvalidPromptException;
+import com.devconnor.askthedev.exception.InvalidSubscriptionException;
 import com.devconnor.askthedev.exception.PromptLimitReachedException;
 import com.devconnor.askthedev.exception.SubscriptionNotFoundException;
 import com.devconnor.askthedev.models.ATDSubscription;
@@ -173,6 +174,85 @@ class PromptServiceTest {
         when(openAIService.sendPrompt(anyString(), anyString())).thenThrow(InvalidPromptException.class);
 
         assertThrows(InvalidPromptException.class, () -> promptService.sendPromptToOpenAI(prompt));
+    }
+
+    @Test
+    void testSummariseWebPage_Successful_NoPreviousPromptsToday() {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+        ATDSubscription subscription = createATDSubscription(userId);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(promptRepository.findAllByUserIdAndCreatedAtToday(eq(userId), any(LocalDateTime.class))).thenReturn(List.of());
+
+        assertDoesNotThrow(() -> promptService.summariseWebPage(prompt));
+
+        verify(openAIService, times(1)).summariseWebPage(anyString());
+    }
+
+    @Test
+    void testSummariseWebPage_Successful_BelowLimitPromptsToday() {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+        List<Prompt> previousTodayPrompts = createPromptList(10, userId);
+        ATDSubscription subscription = createATDSubscription(userId);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(promptRepository.findAllByUserIdAndCreatedAtToday(eq(userId), any(LocalDateTime.class))).thenReturn(previousTodayPrompts);
+
+        assertDoesNotThrow(() -> promptService.summariseWebPage(prompt));
+
+        verify(openAIService, times(1)).summariseWebPage(anyString());
+    }
+
+    @Test
+    void testSummariseWebPage_PromptLimitReached() {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+        List<Prompt> previousTodayPrompts = createPromptList(50, userId);
+        ATDSubscription subscription = createATDSubscription(userId);
+        subscription.setType(SubscriptionType.PRO);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(promptRepository.findAllByUserIdAndCreatedAtToday(eq(userId), any(LocalDateTime.class))).thenReturn(previousTodayPrompts);
+
+        assertThrows(PromptLimitReachedException.class, () -> promptService.summariseWebPage(prompt));
+    }
+
+    @Test
+    void testSummariseWebPage_InvalidSubscription() {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+        ATDSubscription subscription = createATDSubscription(userId);
+        subscription.setType(SubscriptionType.BASIC);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+
+        assertThrows(InvalidSubscriptionException.class, () -> promptService.summariseWebPage(prompt));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"1234"})
+    @NullAndEmptySource
+    void testSummariseWebPage_InvalidWebUrl(String webUrl) {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+        prompt.setWebUrl(webUrl);
+
+        assertThrows(InvalidPromptException.class, () -> promptService.summariseWebPage(prompt));
+    }
+
+    @Test
+    void testSummariseWebPage_OpenAIThrowsException() {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+        ATDSubscription subscription = createATDSubscription(userId);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(promptRepository.findAllByUserIdAndCreatedAtToday(eq(userId), any(LocalDateTime.class))).thenReturn(List.of());
+        when(openAIService.summariseWebPage(anyString())).thenThrow(InvalidPromptException.class);
+
+        assertThrows(InvalidPromptException.class, () -> promptService.summariseWebPage(prompt));
     }
 
     @ParameterizedTest

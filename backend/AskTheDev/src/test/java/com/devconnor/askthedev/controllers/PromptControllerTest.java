@@ -70,10 +70,8 @@ class PromptControllerTest {
     void testPrompt_Successful() throws Exception {
         UUID userId = UUID.randomUUID();
         Prompt prompt = generatePrompt(userId);
-        ATDSubscription subscription = generateActiveSubscription(userId);
         ATDPromptResponse promptResponse = generatePromptResponse(prompt);
 
-        when(subscriptionRepository.getSubscriptionByUserId(any(UUID.class))).thenReturn(subscription);
         when(promptService.sendPromptToOpenAI(any(Prompt.class))).thenReturn(promptResponse);
 
         String body = convertToJson(prompt);
@@ -110,9 +108,6 @@ class PromptControllerTest {
     @WithMockUser
     void testPrompt_EmptyBody() throws Exception {
         UUID userId = UUID.randomUUID();
-        ATDSubscription subscription = generateActiveSubscription(userId);
-
-        when(subscriptionRepository.getSubscriptionByUserId(any(UUID.class))).thenReturn(subscription);
 
         mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/%s", userId))
                         .contentType(APPLICATION_JSON)
@@ -122,16 +117,51 @@ class PromptControllerTest {
 
     @Test
     @WithMockUser
-    void testPrompt_WithoutActiveSubscription() throws Exception {
+    void testSummarise_Successful() throws Exception {
         UUID userId = UUID.randomUUID();
         Prompt prompt = generatePrompt(userId);
+        ATDPromptResponse promptResponse = generatePromptResponse(prompt);
+
+        when(promptService.summariseWebPage(any(Prompt.class))).thenReturn(promptResponse);
+
         String body = convertToJson(prompt);
 
-        mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/%s", userId))
+        mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/summarise/%s", userId))
                         .contentType(APPLICATION_JSON)
                         .content(body)
                 )
-                .andExpect(status().is(401));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.prompt.pageContent").value(prompt.getPageContent()))
+                .andExpect(jsonPath("$.prompt.webUrl").value(prompt.getWebUrl()))
+                .andExpect(jsonPath("$.prompt.id").exists())
+                .andExpect(jsonPath("$.prompt.openAIResponse").exists())
+                .andExpect(jsonPath("$.prompt.createdAt").exists())
+                .andExpect(jsonPath("$.prompt.userId").value(userId.toString()));
+    }
+
+    @Test
+    void testSummarise_NotLoggedIn() throws Exception {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = generatePrompt(userId);
+
+        String body = convertToJson(prompt);
+
+        mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/summarise/%s", userId))
+                        .contentType(APPLICATION_JSON)
+                        .content(body)
+                )
+                .andExpect(status().is(403));
+    }
+
+    @Test
+    @WithMockUser
+    void testSummarise_EmptyBody() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/summarise/%s", userId))
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -210,19 +240,6 @@ class PromptControllerTest {
                         .queryParam(MIN_PAGE_PARAM, "invalid")
                 )
                 .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @WithMockUser
-    void testGetPrompts_WithoutActiveSubscription() throws Exception {
-        UUID userId = UUID.randomUUID();
-
-        mockMvc.perform(MockMvcRequestBuilders.get("/prompt/retrieve")
-                        .queryParam(USER_ID_PARAM, userId.toString())
-                        .queryParam(WEB_URL_PARAM, WEB_URL)
-                        .queryParam(MIN_PAGE_PARAM, "1")
-                )
-                .andExpect(status().is(401));
     }
 
     private static ATDSubscription generateActiveSubscription(UUID userId) {

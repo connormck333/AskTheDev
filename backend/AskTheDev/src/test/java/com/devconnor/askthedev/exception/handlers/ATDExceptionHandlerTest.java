@@ -29,9 +29,6 @@ class ATDExceptionHandlerTest {
     @Mock
     private ExistingUsernameException existingUsernameException;
 
-    @Mock
-    private InvalidSessionException invalidSessionException;
-
     @BeforeEach
     void setUp() {
         handler = new ATDExceptionHandler();
@@ -83,21 +80,30 @@ class ATDExceptionHandlerTest {
         assertEquals(message, response.getMessage());
     }
 
-    @Test
-    void handleInvalidSessionException() {
-        when(invalidSessionException.getMessage()).thenReturn("Invalid session.");
-
-        ATDErrorResponse response = handler.handleInvalidSessionException(invalidSessionException);
-
-        assertEquals(HttpStatus.FORBIDDEN.value(), response.getStatusCode());
-        assertEquals("Invalid session.", response.getMessage());
-    }
-
     private static Stream<Arguments> handleInvalidExceptionContent() {
         return Stream.of(
                 Arguments.of(mock(InvalidUserIdException.class), "Invalid user ID: %s"),
                 Arguments.of(mock(InvalidEventException.class), "Invalid event."),
                 Arguments.of(mock(InvalidPromptException.class), "Invalid prompt.")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("handleForbiddenExceptionContent")
+    void handleInvalidSessionException(ATDException e, String message) {
+        when(e.getMessage()).thenReturn(message);
+
+        ATDErrorResponse response = handler.handleInvalidSessionException(e);
+
+        assertEquals(HttpStatus.FORBIDDEN.value(), response.getStatusCode());
+        assertEquals(message, response.getMessage());
+    }
+
+    private static Stream<Arguments> handleForbiddenExceptionContent() {
+        return Stream.of(
+                Arguments.of(mock(InvalidSessionException.class), "Invalid session."),
+                Arguments.of(mock(InvalidSubscriptionException.class), "Invalid subscription."),
+                Arguments.of(mock(PromptLimitReachedException.class), "Prompt limit reached.")
         );
     }
 }

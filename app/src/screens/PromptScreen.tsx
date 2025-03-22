@@ -64,10 +64,10 @@ Please ask me anything, I am already caught up with your current webpage!
     }
 
     return (
-        <div>
+        <div className="p-[2rem] pb-0">
             <div
                 ref={scrollContainer}
-                className="overflow-scroll scrollbar-hidden flex flex-col items-center h-[70vh] min-w-[50vw]"
+                className="overflow-scroll scrollbar-hidden flex flex-col items-center h-[70vh] w-[32rem]"
             >
                 <ScrollContainerContext.Provider
                     value={scrollContainer}
@@ -78,14 +78,14 @@ Please ask me anything, I am already caught up with your current webpage!
                     />
                 </ScrollContainerContext.Provider>
             </div>
-            <div>
+            <>
                 <Input
                     userId={user.userId}
                     prompt={[prompt, setPrompt]}
                     loading={[loading, setLoading]}
                     chatStream={[chatStream, setChatStream]}
                 />
-            </div>
+            </>
         </div>
     );
 }

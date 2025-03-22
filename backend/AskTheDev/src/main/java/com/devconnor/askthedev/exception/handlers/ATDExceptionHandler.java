@@ -45,9 +45,13 @@ public class ATDExceptionHandler {
         return new ATDErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
     }
 
-    @ExceptionHandler(value = InvalidSessionException.class)
+    @ExceptionHandler(value = {
+            InvalidSessionException.class,
+            InvalidSubscriptionException.class,
+            PromptLimitReachedException.class
+    })
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public @ResponseBody ATDErrorResponse handleInvalidSessionException(InvalidSessionException e) {
+    public @ResponseBody ATDErrorResponse handleInvalidSessionException(Exception e) {
         return new ATDErrorResponse(HttpStatus.FORBIDDEN.value(), e.getMessage());
     }
 }

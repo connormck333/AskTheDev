@@ -63,6 +63,10 @@ public class OpenAIService {
         return getResponse(chatCompletion.choices());
     }
 
+    public String summariseWebPage(String pageContent) {
+        return sendPrompt(pageContent, "Summarise this web page.");
+    }
+
     private String getResponse(List<ChatCompletion.Choice> choices) {
         if (
                 choices != null
