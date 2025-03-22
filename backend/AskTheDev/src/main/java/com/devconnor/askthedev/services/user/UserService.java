@@ -41,9 +41,9 @@ public class UserService {
     }
 
     public UserDTO getUserByEmail(String email) {
-        Optional<UserDTO> optionalUser = userRepository.findUserByEmail(email);
+        Optional<User> optionalUser = userRepository.findUserByEmail(email);
         if (optionalUser.isPresent()) {
-            return optionalUser.get();
+            return mapToDTO(optionalUser.get());
         }
 
         log.info("User with email {} not found", email);
@@ -58,5 +58,14 @@ public class UserService {
 
         log.info("User with customer id {} not found", customerId);
         throw new CustomerNotFoundException();
+    }
+
+    private static UserDTO mapToDTO(User user) {
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(user.getId());
+        userDTO.setEmail(user.getEmail());
+        userDTO.setCustomerId(user.getCustomerId());
+
+        return userDTO;
     }
 }

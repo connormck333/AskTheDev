@@ -83,7 +83,7 @@ class UserServiceTest {
     @Test
     void testGetUserByEmail_Successful() {
         UUID userId = UUID.randomUUID();
-        UserDTO user = createUserDTO(userId);
+        User user = createUser(userId);
 
         when(userRepository.findUserByEmail(EMAIL)).thenReturn(Optional.of(user));
 

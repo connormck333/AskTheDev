@@ -22,8 +22,6 @@ function App(): ReactElement {
             return;
         }
 
-        console.log(response.data);
-
         if (signedIn || signedInUser) {}
 
         setSignedInUser(response.data);

@@ -12,7 +12,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
     Optional<UserDTO> findUserById(UUID id);
     @NotNull Optional<User> findById(@NotNull UUID id);
-    Optional<UserDTO> findUserByEmail(String email);
+    Optional<User> findUserByEmail(String email);
     @NotNull Optional<User> findByEmail(String email);
     Optional<UserDTO> findUserByCustomerId(String customerId);
 
