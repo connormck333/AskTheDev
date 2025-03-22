@@ -31,7 +31,7 @@ public class StripeService {
     private final EventManager eventManager;
     private final UserRepository userRepository;
 
-    private final String ENDPOINT_SECRET;
+    private final String stripeEndpointSecret;
 
     public StripeService(
             UserService userService,
@@ -43,12 +43,12 @@ public class StripeService {
 
         Dotenv dotenv = Dotenv.configure().load();
         Stripe.apiKey = dotenv.get("STRIPE_API_KEY");
-        this.ENDPOINT_SECRET = dotenv.get("STRIPE_ENDPOINT_SECRET");
+        this.stripeEndpointSecret = dotenv.get("STRIPE_ENDPOINT_SECRET");
         this.userRepository = userRepository;
     }
 
     public Event validateAndRetrieveEvent(String stripeSignature, String eventPayload) throws SignatureVerificationException {
-        return Webhook.constructEvent(eventPayload, stripeSignature, ENDPOINT_SECRET);
+        return Webhook.constructEvent(eventPayload, stripeSignature, stripeEndpointSecret);
     }
 
     public String createCheckoutSession(String priceId, UUID userId) {

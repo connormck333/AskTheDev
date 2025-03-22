@@ -179,10 +179,13 @@ class EventManagerTest {
 
     @Test
     void testHandleSubscriptionDeleted_Successful() {
+        UUID userId = UUID.randomUUID();
         Subscription subscription = createSubscription();
+        ATDSubscription atdSubscription = createATDSubscription(userId);
 
         when(mockedEvent.getDataObjectDeserializer()).thenReturn(eventDataObjectDeserializer);
         when(eventDataObjectDeserializer.getObject()).thenReturn(Optional.of(subscription));
+        when(subscriptionRepository.getSubscriptionByStripeSubscriptionId(SUBSCRIPTION_ID)).thenReturn(atdSubscription);
 
         eventManager.handleSubscriptionDeleted(mockedEvent);
 

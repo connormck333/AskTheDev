@@ -2,6 +2,7 @@ package com.devconnor.askthedev.services.payments;
 
 import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
+import com.devconnor.askthedev.exception.InvalidEventException;
 import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
@@ -94,7 +95,7 @@ class StripeServiceTest {
     void testValidateAndRetrieveEvent_ThrowsException() {
         mockedStaticWebhook.when(() -> Webhook.constructEvent(eq(EVENT_PAYLOAD), eq(STRIPE_SIGNATURE), anyString())).thenThrow(SignatureVerificationException.class);
 
-        assertThrows(SignatureVerificationException.class, () -> stripeService.validateAndRetrieveEvent(EVENT_PAYLOAD, EVENT_PAYLOAD));
+        assertThrows(SignatureVerificationException.class, () -> stripeService.validateAndRetrieveEvent(STRIPE_SIGNATURE, EVENT_PAYLOAD));
     }
 
     @Test

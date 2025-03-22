@@ -2,6 +2,7 @@ package com.devconnor.askthedev.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +37,11 @@ class JwtAuthenticationFilterTest {
         jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtUtil);
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @ParameterizedTest
