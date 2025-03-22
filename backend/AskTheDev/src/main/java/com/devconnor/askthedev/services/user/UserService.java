@@ -21,9 +21,9 @@ public class UserService {
     private final UserRepository userRepository;
 
     public UserDTO getUserById(UUID userId) {
-        Optional<UserDTO> optionalUser = userRepository.findUserById(userId);
+        Optional<User> optionalUser = userRepository.findUserById(userId);
         if (optionalUser.isPresent()) {
-            return optionalUser.get();
+            return mapToDTO(optionalUser.get());
         }
 
         log.info("User with id {} not found", userId);
@@ -51,9 +51,9 @@ public class UserService {
     }
 
     public UserDTO getUserByCustomerId(String customerId) {
-        Optional<UserDTO> optionalUser = userRepository.findUserByCustomerId(customerId);
+        Optional<User> optionalUser = userRepository.findUserByCustomerId(customerId);
         if (optionalUser.isPresent()) {
-            return optionalUser.get();
+            return mapToDTO(optionalUser.get());
         }
 
         log.info("User with customer id {} not found", customerId);

@@ -6,6 +6,7 @@ import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.services.user.UserService;
+import com.devconnor.askthedev.utils.SubscriptionType;
 import com.stripe.Stripe;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
@@ -51,8 +52,9 @@ public class StripeService {
         return Webhook.constructEvent(eventPayload, stripeSignature, stripeEndpointSecret);
     }
 
-    public String createCheckoutSession(String priceId, UUID userId) {
+    public String createCheckoutSession(SubscriptionType subscriptionType, UUID userId) {
         Customer customer = getCustomer(userId);
+        String priceId = subscriptionType.getValue();
 
         try {
             SessionCreateParams params = SessionCreateParams.builder()

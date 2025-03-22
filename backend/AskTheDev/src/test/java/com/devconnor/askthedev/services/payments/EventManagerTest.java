@@ -350,7 +350,7 @@ class EventManagerTest {
 
         Price price = new Price();
         price.setCurrency("GBP");
-        price.setProduct(SubscriptionType.BASIC.getValue());
+        price.setId(SubscriptionType.BASIC.getValue());
 
         SubscriptionItem subscriptionItem = new SubscriptionItem();
         subscriptionItem.setPrice(price);

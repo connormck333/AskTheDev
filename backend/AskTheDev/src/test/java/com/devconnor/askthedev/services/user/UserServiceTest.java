@@ -35,7 +35,7 @@ class UserServiceTest {
     @Test
     void testGetUserById_Successful() {
         UUID userId = UUID.randomUUID();
-        UserDTO user = createUserDTO(userId);
+        User user = createUser(userId);
 
         when(userRepository.findUserById(userId)).thenReturn(Optional.of(user));
 
@@ -105,7 +105,7 @@ class UserServiceTest {
     @Test
     void testGetUserByCustomerId_Successful() {
         UUID userId = UUID.randomUUID();
-        UserDTO user = createUserDTO(userId);
+        User user = createUser(userId);
 
         when(userRepository.findUserByCustomerId(CUSTOMER_ID)).thenReturn(Optional.of(user));
 

@@ -8,7 +8,7 @@ import SubscriptionScreen from './screens/SubscriptionScreen';
 
 function App(): ReactElement {
 
-    const [signedIn, setSignedIn] = useState<boolean | undefined>(undefined);
+    const [signedIn, setSignedIn] = useState<boolean | undefined>(true);
     const [signedInUser, setSignedInUser] = useState<User | undefined>(undefined);
 
     useEffect(() => {

@@ -3,11 +3,16 @@ import { sendPostRequest } from "../requests";
 
 interface CheckoutBody {
     userId: string,
-    amount: number
+    subscriptionType: string
 }
 
-async function createCheckoutSession(userId: string, amount: number): Promise<Status> {
-    const body: CheckoutBody = { userId, amount };
+async function createCheckoutSession(userId: string, tierId: string): Promise<Status> {
+    const body: CheckoutBody = {
+        userId: userId,
+        subscriptionType: tierId
+    }
+
+    console.log(tierId);
 
     return await sendPostRequest("/payment/create-checkout", body);
 }

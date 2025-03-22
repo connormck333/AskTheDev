@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum SubscriptionType {
-    BASIC("prod_RwZzeVUoP7d3ke"),
-    PRO("");
+    BASIC("price_1R2gpoIW6fDMtSqJFfgdq3ls"),
+    PRO("price_1R5U5xIW6fDMtSqJF6Zpxoml");
 
     private final String value;
 

@@ -33,9 +33,9 @@ export default function RegisterScreen(): ReactElement {
     return (
         <section>
             <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-                <a href="#" className="flex items-center mb-6">
+                <div className="flex items-center mb-6">
                     <img className="w-auto h-10 mr-2" src="/logo.png" alt="logo"/>
-                </a>
+                </div>
                 <div className="w-full md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                     <div className="space-y-4 md:space-y-6 sm:p-8">
                         <h1 className="font-bold leading-tight tracking-tight text-gray-900 dark:text-white">

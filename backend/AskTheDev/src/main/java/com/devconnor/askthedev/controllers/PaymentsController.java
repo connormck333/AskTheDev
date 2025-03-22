@@ -4,7 +4,6 @@ import com.devconnor.askthedev.controllers.request.PaymentRequest;
 import com.devconnor.askthedev.controllers.response.CheckoutSession;
 import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.services.payments.StripeService;
-import com.stripe.exception.StripeException;
 import com.stripe.model.Event;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -36,7 +35,7 @@ public class PaymentsController {
             @RequestBody PaymentRequest paymentRequest
     ) {
         try {
-            String url = stripeService.createCheckoutSession("price_1R2gpoIW6fDMtSqJFfgdq3ls", paymentRequest.getUserId());
+            String url = stripeService.createCheckoutSession(paymentRequest.getSubscriptionType(), paymentRequest.getUserId());
             return ResponseEntity.ok(new CheckoutSession(url));
         } catch (ATDException e) {
             return ResponseEntity.status(500).body(null);

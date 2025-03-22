@@ -143,7 +143,7 @@ public class EventManager {
 
     private SubscriptionType deriveSubscriptionType(Subscription subscription) {
         SubscriptionItem subscriptionItem = subscription.getItems().getData().getFirst();
-        String productId = subscriptionItem.getPrice().getProduct();
-        return SubscriptionType.fromString(productId);
+        String priceId = subscriptionItem.getPrice().getId();
+        return SubscriptionType.fromString(priceId);
     }
 }

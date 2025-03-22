@@ -6,6 +6,7 @@ import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.services.user.UserService;
+import com.devconnor.askthedev.utils.SubscriptionType;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
@@ -37,8 +38,7 @@ class StripeServiceTest {
     private static final String STRIPE_SIGNATURE = "stripeSignature";
     private static final String EVENT_PAYLOAD = "eventPayload";
     private static final String CHECKOUT_URL = "checkoutUrl";
-    private static final String PRICE_ID = "priceId";
-    
+
     private StripeService stripeService;
 
     @Mock
@@ -107,7 +107,7 @@ class StripeServiceTest {
         mockedStaticSession.when(() -> Session.create(any(SessionCreateParams.class))).thenReturn(mockedSession);
         when(mockedSession.getUrl()).thenReturn(CHECKOUT_URL);
 
-        String url = stripeService.createCheckoutSession(PRICE_ID, userId);
+        String url = stripeService.createCheckoutSession(SubscriptionType.BASIC, userId);
 
         assertEquals(CHECKOUT_URL, url);
     }
@@ -124,7 +124,7 @@ class StripeServiceTest {
         mockedStaticSession.when(() -> Session.create(any(SessionCreateParams.class))).thenReturn(mockedSession);
         when(mockedSession.getUrl()).thenReturn(CHECKOUT_URL);
 
-        String url = stripeService.createCheckoutSession(PRICE_ID, userId);
+        String url = stripeService.createCheckoutSession(SubscriptionType.BASIC, userId);
 
         assertEquals(CHECKOUT_URL, url);
         verify(userRepository, times(1)).save(user);
@@ -136,7 +136,7 @@ class StripeServiceTest {
 
         when(userService.findById(userId)).thenReturn(null);
 
-        assertThrows(UserNotFoundException.class, () -> stripeService.createCheckoutSession(PRICE_ID, userId));
+        assertThrows(UserNotFoundException.class, () -> stripeService.createCheckoutSession(SubscriptionType.BASIC, userId));
     }
 
     @Test
@@ -147,7 +147,7 @@ class StripeServiceTest {
         when(userService.findById(userId)).thenReturn(user);
         mockedStaticCustomer.when(() -> Customer.retrieve(CUSTOMER_ID)).thenThrow(CustomerNotFoundException.class);
 
-        assertThrows(CustomerNotFoundException.class, () -> stripeService.createCheckoutSession(PRICE_ID, userId));
+        assertThrows(CustomerNotFoundException.class, () -> stripeService.createCheckoutSession(SubscriptionType.BASIC, userId));
     }
 
     @Test
@@ -159,7 +159,7 @@ class StripeServiceTest {
         when(userService.findById(userId)).thenReturn(user);
         mockedStaticCustomer.when(() -> Customer.create(any(CustomerCreateParams.class))).thenThrow(ATDException.class);
 
-        assertThrows(ATDException.class, () -> stripeService.createCheckoutSession(PRICE_ID, userId));
+        assertThrows(ATDException.class, () -> stripeService.createCheckoutSession(SubscriptionType.BASIC, userId));
     }
 
     @Test
@@ -172,6 +172,6 @@ class StripeServiceTest {
         when(mockedCustomer.getId()).thenReturn(CUSTOMER_ID);
         mockedStaticSession.when(() -> Session.create(any(SessionCreateParams.class))).thenThrow(ATDException.class);
 
-        assertThrows(ATDException.class, () -> stripeService.createCheckoutSession(PRICE_ID, userId));
+        assertThrows(ATDException.class, () -> stripeService.createCheckoutSession(SubscriptionType.BASIC, userId));
     }
 }
