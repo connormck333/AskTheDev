@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,5 +22,15 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
             @Param("userId") UUID userId,
             @Param("limit") int limit,
             @Param("offset") int offset
+    );
+
+    @Query(value = """
+        SELECT * FROM prompts
+        WHERE user_id = :userId
+        AND created_at >= :startOfDay
+    """, nativeQuery = true)
+    List<Prompt> findAllByUserIdAndCreatedAtToday(
+            @Param("userId") UUID userId,
+            @Param("startOfDay") LocalDateTime startOfDay
     );
 }

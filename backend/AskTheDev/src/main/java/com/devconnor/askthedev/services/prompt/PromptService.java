@@ -4,13 +4,18 @@ import com.devconnor.askthedev.controllers.response.ATDPromptListResponse;
 import com.devconnor.askthedev.controllers.response.ATDPromptResponse;
 import com.devconnor.askthedev.controllers.response.ATDResponse;
 import com.devconnor.askthedev.exception.InvalidPromptException;
+import com.devconnor.askthedev.exception.PromptLimitReachedException;
+import com.devconnor.askthedev.exception.SubscriptionNotFoundException;
+import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.Prompt;
 import com.devconnor.askthedev.repositories.PromptRepository;
+import com.devconnor.askthedev.repositories.SubscriptionRepository;
+import com.devconnor.askthedev.utils.SubscriptionType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,14 +26,16 @@ import static com.devconnor.askthedev.utils.Constants.*;
 public class PromptService {
 
     private final OpenAIService openAIService;
-
     private final PromptRepository promptRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
     public ATDPromptResponse sendPromptToOpenAI(Prompt prompt) {
         ATDPromptResponse atdPromptResponse = new ATDPromptResponse();
+
         if (!isValidPromptRequest(atdPromptResponse, prompt) || !isValidWebUrl(atdPromptResponse, prompt.getWebUrl())) {
             throw new InvalidPromptException();
         }
+        validateUserSubscription(prompt.getUserId());
 
         prompt.setOpenAIResponse(
                 openAIService.sendPrompt(prompt.getPageContent(), prompt.getUserPrompt())
@@ -50,6 +57,25 @@ public class PromptService {
 
         atdPromptListResponse.setPrompts(prompts);
         return atdPromptListResponse;
+    }
+
+    private void validateUserSubscription(UUID userId) {
+        ATDSubscription subscription = subscriptionRepository.getSubscriptionByUserId(userId);
+        if (subscription == null || !subscription.isActive()) {
+            throw new SubscriptionNotFoundException();
+        }
+
+        validateUserPromptsAmount(userId, subscription.getType());
+    }
+
+    private void validateUserPromptsAmount(UUID userId, SubscriptionType subscriptionType) {
+        LocalDateTime startOfDay = LocalDateTime.now().with(LocalTime.MIN);
+        List<Prompt> todayPrompts = promptRepository.findAllByUserIdAndCreatedAtToday(userId, startOfDay);
+
+        int permittedAmount = SubscriptionType.getPromptAmount(subscriptionType);
+        if (todayPrompts != null && todayPrompts.size() >= permittedAmount) {
+            throw new PromptLimitReachedException();
+        }
     }
 
     private static boolean isValidPromptRequest(ATDPromptResponse response, Prompt prompt) {

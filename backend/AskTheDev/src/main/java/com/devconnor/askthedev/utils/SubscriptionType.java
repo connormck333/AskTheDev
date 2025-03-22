@@ -21,4 +21,11 @@ public enum SubscriptionType {
 
         throw new SubscriptionNotFoundException();
     }
+
+    public static int getPromptAmount(SubscriptionType subscriptionType) {
+        return switch (subscriptionType) {
+            case BASIC -> 15;
+            case PRO -> 50;
+        };
+    }
 }

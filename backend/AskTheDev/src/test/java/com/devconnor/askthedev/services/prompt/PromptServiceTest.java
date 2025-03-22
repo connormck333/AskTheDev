@@ -2,24 +2,32 @@ package com.devconnor.askthedev.services.prompt;
 
 import com.devconnor.askthedev.controllers.response.ATDPromptListResponse;
 import com.devconnor.askthedev.exception.InvalidPromptException;
+import com.devconnor.askthedev.exception.PromptLimitReachedException;
+import com.devconnor.askthedev.exception.SubscriptionNotFoundException;
+import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.Prompt;
 import com.devconnor.askthedev.repositories.PromptRepository;
+import com.devconnor.askthedev.repositories.SubscriptionRepository;
+import com.devconnor.askthedev.utils.SubscriptionType;
 import com.devconnor.askthedev.utils.Utils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static com.devconnor.askthedev.utils.Constants.MAXIMUM_URL_LENGTH;
 import static com.devconnor.askthedev.utils.Constants.PROMPT_NOT_FOUND;
+import static com.devconnor.askthedev.utils.Utils.createATDSubscription;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -39,15 +47,88 @@ class PromptServiceTest {
     @Mock
     private PromptRepository promptRepository;
 
+    @Mock
+    private SubscriptionRepository subscriptionRepository;
+
     @BeforeEach
     void setUp() {
-        promptService = new PromptService(openAIService, promptRepository);
+        promptService = new PromptService(openAIService, promptRepository, subscriptionRepository);
     }
 
     @Test
-    void testSendPromptToOpenAI_Successful() {
+    void testSendPromptToOpenAI_Successful_WithNoPreviousPromptsToday() {
         UUID userId = UUID.randomUUID();
         Prompt prompt = createPrompt(userId);
+        ATDSubscription subscription = createATDSubscription(userId);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(promptRepository.findAllByUserIdAndCreatedAtToday(eq(userId), any(LocalDateTime.class))).thenReturn(List.of());
+
+        assertDoesNotThrow(() -> promptService.sendPromptToOpenAI(prompt));
+
+        verify(openAIService, times(1)).sendPrompt(anyString(), anyString());
+    }
+
+    @Test
+    void testSendPromptToOpenAI_Successful_WithBelowLimitPromptsToday() {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+        List<Prompt> previousTodayPrompts = createPromptList(5, userId);
+        ATDSubscription subscription = createATDSubscription(userId);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(promptRepository.findAllByUserIdAndCreatedAtToday(eq(userId), any(LocalDateTime.class))).thenReturn(previousTodayPrompts);
+
+        assertDoesNotThrow(() -> promptService.sendPromptToOpenAI(prompt));
+
+        verify(openAIService, times(1)).sendPrompt(anyString(), anyString());
+    }
+
+    @ParameterizedTest
+    @EnumSource(SubscriptionType.class)
+    void testSendPromptToOpenAI_PromptLimitReached(SubscriptionType subscriptionType) {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+        List<Prompt> previousTodayPrompts = createPromptList(50, userId);
+        ATDSubscription subscription = createATDSubscription(userId);
+        subscription.setType(subscriptionType);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(promptRepository.findAllByUserIdAndCreatedAtToday(eq(userId), any(LocalDateTime.class))).thenReturn(previousTodayPrompts);
+
+        assertThrows(PromptLimitReachedException.class, () -> promptService.sendPromptToOpenAI(prompt));
+    }
+
+    @Test
+    void testSendPromptToOpenAI_SubscriptionNull() {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(null);
+
+        assertThrows(SubscriptionNotFoundException.class, () -> promptService.sendPromptToOpenAI(prompt));
+    }
+
+    @Test
+    void testSendPromptToOpenAI_SubscriptionInactive() {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+        ATDSubscription subscription = createATDSubscription(userId);
+        subscription.setActive(false);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(null);
+
+        assertThrows(SubscriptionNotFoundException.class, () -> promptService.sendPromptToOpenAI(prompt));
+    }
+
+    @Test
+    void testSendPromptToOpenAI_TodayPromptsNull() {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+        ATDSubscription subscription = createATDSubscription(userId);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(promptRepository.findAllByUserIdAndCreatedAtToday(eq(userId), any(LocalDateTime.class))).thenReturn(null);
 
         assertDoesNotThrow(() -> promptService.sendPromptToOpenAI(prompt));
 
@@ -85,7 +166,10 @@ class PromptServiceTest {
     void testSendPromptToOpenAI_OpenAIThrowsException() {
         UUID userId = UUID.randomUUID();
         Prompt prompt = createPrompt(userId);
+        ATDSubscription subscription = createATDSubscription(userId);
 
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(promptRepository.findAllByUserIdAndCreatedAtToday(eq(userId), any(LocalDateTime.class))).thenReturn(List.of());
         when(openAIService.sendPrompt(anyString(), anyString())).thenThrow(InvalidPromptException.class);
 
         assertThrows(InvalidPromptException.class, () -> promptService.sendPromptToOpenAI(prompt));
