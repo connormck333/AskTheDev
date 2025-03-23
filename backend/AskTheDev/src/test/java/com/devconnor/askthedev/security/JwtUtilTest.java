@@ -1,5 +1,6 @@
 package com.devconnor.askthedev.security;
 
+import com.devconnor.askthedev.models.RefreshToken;
 import com.devconnor.askthedev.repositories.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import java.security.Key;
 import java.util.Date;
 
+import static com.devconnor.askthedev.utils.Utils.createRefreshToken;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -82,8 +84,10 @@ class JwtUtilTest {
     void testIsSessionValid_Successful() {
         String token = jwtUtil.generateJwtToken(TEST_EMAIL);
         Cookie cookie = new Cookie("token", token);
+        RefreshToken refreshToken = createRefreshToken();
 
         when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+        when(refreshTokenRepository.findByToken(token)).thenReturn(refreshToken);
 
         boolean isSessionValid = jwtUtil.isSessionValid(request, TEST_EMAIL);
 

@@ -37,7 +37,6 @@ class AuthenticationServiceTest {
 
     private static final String ENCODED_PASSWORD = "encodedPassword";
     private static final String REGISTER_SUCCESS_MESSAGE = "User registered successfully.";
-    private static final String SESSION_TOKEN = "sessionToken";
 
     private AuthenticationService authenticationService;
 
@@ -91,9 +90,13 @@ class AuthenticationServiceTest {
 
     @Test
     void testLogin_Successful() {
+        UUID userId = UUID.randomUUID();
+        ATDUserResponse atdUserResponse = generateUserResponse(userId);
+
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(mockedAuthentication);
         doNothing().when(jwtUtil).saveHttpCookie(response, EMAIL);
+        when(userService.getATDUserResponseByUser(any())).thenReturn(atdUserResponse);
 
         ATDUserResponse atdResponse = authenticationService.login(response, EMAIL, PASSWORD);
 
@@ -139,7 +142,7 @@ class AuthenticationServiceTest {
 
         when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
         when(mockedAuthentication.isAuthenticated()).thenReturn(true);
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + SESSION_TOKEN);
+        when(jwtUtil.getTokenFromCookie(request)).thenReturn(SESSION_TOKEN);
         when(refreshTokenRepository.findByToken(SESSION_TOKEN)).thenReturn(refreshToken);
 
         assertDoesNotThrow(() -> authenticationService.logout(request, response));
@@ -164,16 +167,7 @@ class AuthenticationServiceTest {
     void testLogout_WhenRequestSentWithoutToken() {
         when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
         when(mockedAuthentication.isAuthenticated()).thenReturn(true);
-        when(request.getHeader("Authorization")).thenReturn(null);
-
-        assertThrows(InvalidSessionException.class, () -> authenticationService.logout(request, response));
-    }
-
-    @Test
-    void testLogout_WhenRequestSentWithInvalidToken() {
-        when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
-        when(mockedAuthentication.isAuthenticated()).thenReturn(true);
-        when(request.getHeader("Authorization")).thenReturn("invalid " + SESSION_TOKEN);
+        when(jwtUtil.getTokenFromCookie(request)).thenReturn(null);
 
         assertThrows(InvalidSessionException.class, () -> authenticationService.logout(request, response));
     }
@@ -182,17 +176,9 @@ class AuthenticationServiceTest {
     void testLogout_WhenRefreshTokenDoesNotExist() {
         when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
         when(mockedAuthentication.isAuthenticated()).thenReturn(true);
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + SESSION_TOKEN);
+        when(jwtUtil.getTokenFromCookie(request)).thenReturn(SESSION_TOKEN);
         when(refreshTokenRepository.findByToken(SESSION_TOKEN)).thenReturn(null);
 
         assertThrows(InvalidSessionException.class, () -> authenticationService.logout(request, response));
-    }
-
-    private static RefreshToken createRefreshToken() {
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken(SESSION_TOKEN);
-        refreshToken.setActive(true);
-
-        return refreshToken;
     }
 }

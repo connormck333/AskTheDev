@@ -1,6 +1,8 @@
 package com.devconnor.askthedev.utils;
 
+import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.models.ATDSubscription;
+import com.devconnor.askthedev.models.RefreshToken;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.models.UserDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,6 +24,7 @@ public class Utils {
     public static final String EVENT_JSON = "eventJson";
     public static final String ACTIVE = "active";
     public static final String INACTIVE = "inactive";
+    public static final String SESSION_TOKEN = "sessionToken";
 
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             + "abcdefghijklmnopqrstuvwxyz"
@@ -62,6 +65,23 @@ public class Utils {
         user.setId(userId);
 
         return user;
+    }
+
+    public static ATDUserResponse generateUserResponse(UUID userId) {
+        ATDUserResponse atdUserResponse = new ATDUserResponse();
+        atdUserResponse.setEmail(EMAIL);
+        atdUserResponse.setUserId(userId);
+        atdUserResponse.setActiveSubscription(false);
+
+        return atdUserResponse;
+    }
+
+    public static RefreshToken createRefreshToken() {
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(SESSION_TOKEN);
+        refreshToken.setActive(true);
+
+        return refreshToken;
     }
 
     public static String generateRandomString(int length) {

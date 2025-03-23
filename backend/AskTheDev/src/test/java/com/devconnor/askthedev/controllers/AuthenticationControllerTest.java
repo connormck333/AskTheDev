@@ -47,13 +47,11 @@ class AuthenticationControllerTest {
     @MockitoBean
     private AuthenticationManager authenticationManager;
 
-    private static final String VALID_EMAIL = "test@gmail.com";
-    private static final String VALID_PASSWORD = "password123";
-
     @Test
     void testRegister_WithValidEmailAndPassword() throws Exception {
-        ATDUserResponse userResponse = generateUserResponse();
-        when(authenticationService.register(any(HttpServletResponse.class), eq(VALID_EMAIL), eq(VALID_PASSWORD))).thenReturn(userResponse);
+        UUID userId = UUID.randomUUID();
+        ATDUserResponse userResponse = generateUserResponse(userId);
+        when(authenticationService.register(any(HttpServletResponse.class), eq(EMAIL), eq(PASSWORD))).thenReturn(userResponse);
 
         String body = generateUserAuthRequest();
 
@@ -62,7 +60,7 @@ class AuthenticationControllerTest {
                         .content(body)
                 )
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value(VALID_EMAIL))
+                .andExpect(jsonPath("$.email").value(EMAIL))
                 .andExpect(jsonPath("$.userId").exists())
                 .andExpect(jsonPath("$.activeSubscription").value(false))
                 .andExpect(jsonPath("$.subscriptionType").doesNotExist());
@@ -70,8 +68,9 @@ class AuthenticationControllerTest {
 
     @Test
     void testLogin_WithValidEmailAndPassword() throws Exception {
-        ATDUserResponse userResponse = generateUserResponse();
-        when(authenticationService.login(any(HttpServletResponse.class), eq(VALID_EMAIL), eq(VALID_PASSWORD))).thenReturn(userResponse);
+        UUID userId = UUID.randomUUID();
+        ATDUserResponse userResponse = generateUserResponse(userId);
+        when(authenticationService.login(any(HttpServletResponse.class), eq(EMAIL), eq(PASSWORD))).thenReturn(userResponse);
 
         String userAuthRequest = generateUserAuthRequest();
 
@@ -102,18 +101,9 @@ class AuthenticationControllerTest {
 
     private String generateUserAuthRequest() throws JsonProcessingException {
         UserAuthRequest userAuthRequest = new UserAuthRequest();
-        userAuthRequest.setEmail(VALID_EMAIL);
-        userAuthRequest.setPassword(VALID_PASSWORD);
+        userAuthRequest.setEmail(EMAIL);
+        userAuthRequest.setPassword(PASSWORD);
 
         return convertToJson(userAuthRequest);
-    }
-
-    private ATDUserResponse generateUserResponse() {
-        ATDUserResponse atdUserResponse = new ATDUserResponse();
-        atdUserResponse.setEmail(VALID_EMAIL);
-        atdUserResponse.setUserId(UUID.randomUUID());
-        atdUserResponse.setActiveSubscription(false);
-
-        return atdUserResponse;
     }
 }

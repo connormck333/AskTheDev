@@ -1,5 +1,6 @@
 package com.devconnor.askthedev.controllers;
 
+import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.UUID;
 
 import static com.devconnor.askthedev.utils.Utils.APPLICATION_JSON;
+import static com.devconnor.askthedev.utils.Utils.generateUserResponse;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -126,12 +128,14 @@ class UserControllerTest {
         String token = "sessionToken";
         UUID userId = UUID.randomUUID();
         UserDTO user = createUser(userId);
-        ATDSubscription subscription = createActiveSubscription();
+        ATDUserResponse atdUserResponse = generateUserResponse(userId);
+        atdUserResponse.setActiveSubscription(true);
+        atdUserResponse.setSubscriptionType(SubscriptionType.BASIC);
 
         when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
         when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
         when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
-        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(userService.getATDUserResponseByUser(user)).thenReturn(atdUserResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
                         .contentType(APPLICATION_JSON)
@@ -140,7 +144,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.userId").value(userId.toString()))
                 .andExpect(jsonPath("$.email").value(user.getEmail()))
                 .andExpect(jsonPath("$.activeSubscription").value(true))
-                .andExpect(jsonPath("$.subscriptionType").value(subscription.getType().toString()));
+                .andExpect(jsonPath("$.subscriptionType").value(atdUserResponse.getSubscriptionType().toString()));
     }
 
     @Test
@@ -149,11 +153,12 @@ class UserControllerTest {
         String token = "sessionToken";
         UUID userId = UUID.randomUUID();
         UserDTO user = createUser(userId);
+        ATDUserResponse atdUserResponse = generateUserResponse(userId);
 
         when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
         when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
         when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
-        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(null);
+        when(userService.getATDUserResponseByUser(user)).thenReturn(atdUserResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
                         .contentType(APPLICATION_JSON)
@@ -171,13 +176,13 @@ class UserControllerTest {
         String token = "sessionToken";
         UUID userId = UUID.randomUUID();
         UserDTO user = createUser(userId);
-        ATDSubscription subscription = createActiveSubscription();
-        subscription.setActive(false);
+        ATDUserResponse atdUserResponse = generateUserResponse(userId);
+        atdUserResponse.setSubscriptionType(SubscriptionType.BASIC);
 
         when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
         when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
         when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
-        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+        when(userService.getATDUserResponseByUser(user)).thenReturn(atdUserResponse);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/user/current-user")
                         .contentType(APPLICATION_JSON)
@@ -186,7 +191,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.userId").value(userId.toString()))
                 .andExpect(jsonPath("$.email").value(user.getEmail()))
                 .andExpect(jsonPath("$.activeSubscription").value(false))
-                .andExpect(jsonPath("$.subscriptionType").value(subscription.getType().toString()));
+                .andExpect(jsonPath("$.subscriptionType").value(atdUserResponse.getSubscriptionType().toString()));
     }
 
     @Test
