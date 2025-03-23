@@ -1,54 +1,46 @@
 import { ReactElement, useState } from "react";
 import FormInput from "../components/FormInput";
-import { isValidEmail, isValidPassword } from "../utils/inputValidation";
-import { Status } from "../utils/interfaces";
-import { createAccount } from "../methods/userManagement/createAccount";
 import Loading from "../components/Loading";
 import ScreenType from "../utils/ScreenType";
+import { Status } from "../utils/interfaces";
+import { login } from "../methods/userManagement/login";
 
-interface RegisterScreenProps {
+interface LoginScreenProps {
     setUser: Function;
     setSignedIn: Function;
     setCurrentScreen: Function;
 }
 
-export default function RegisterScreen(props: RegisterScreenProps): ReactElement {
+export default function LoginScreen(props: LoginScreenProps): ReactElement {
 
-    const { setUser, setSignedIn, setCurrentScreen } = props;
+    const { setCurrentScreen, setUser, setSignedIn } = props;
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
-    const [confirmPassword, setConfirmPassword] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
 
-    async function createUserAccount(): Promise<void> {
-        if (!isValidEmail(email)) {
-            alert("Invalid email.");
-            return;
-        } else if (!isValidPassword(password)) {
-            alert("Your password is not strong enough. It must be 8 characters or longer & contains a special character.");
-            return;
-        } else if (password !== confirmPassword) {
-            alert("Your passwords do not match!");
+    async function loginUser(): Promise<void> {
+        if (email.length < 4 || password.length < 4) {
+            alert("Please enter your email and password.");
             return;
         }
 
         setLoading(true);
-
-        const response: Status = await createAccount(email, password);
+        
+        const response: Status = await login(email, password);
 
         setLoading(false);
 
         if (!response.success) {
-            alert("There was an error creating your account. Please try again later.");
+            alert("There was an error logging you in. Make sure you have entered the correct email and password.");
             return;
         }
 
+        setUser({...response.data});
         setSignedIn(true);
-        setUser(response.data);
     }
 
-    function login(): void {
-        setCurrentScreen(ScreenType.LOGIN);
+    function register(): void {
+        setCurrentScreen(ScreenType.REGISTER);
     }
 
     return (
@@ -60,7 +52,7 @@ export default function RegisterScreen(props: RegisterScreenProps): ReactElement
                 <div className="w-full md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                     <div className="space-y-4 md:space-y-6 sm:p-8">
                         <h1 className="font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
-                            Create an account
+                            Welcome Back!
                         </h1>
                         <form className="space-y-4 md:space-y-6" action="#">
                             <FormInput
@@ -75,33 +67,19 @@ export default function RegisterScreen(props: RegisterScreenProps): ReactElement
                                 placeholder="••••••••"
                                 type="password"
                             />
-                            <FormInput
-                                value={[confirmPassword, setConfirmPassword]}
-                                label="Confirm password"
-                                placeholder="••••••••"
-                                type="password"
-                            />
-                            <div className="flex items-start">
-                                <div className="flex items-center h-5">
-                                    <input aria-describedby="terms" type="checkbox" className="w-4 h-4 border border-gray-300 rounded bg-gray-50 dark:border-gray-200" />
-                                </div>
-                                <div className="ml-3 text-sm">
-                                    <label className="font-light text-gray-500 dark:text-gray-300">I accept the <a className="font-medium text-primary-600 hover:underline dark:text-primary-500" href="#">Terms and Conditions</a></label>
-                                </div>
-                            </div>
                             <button
                                 type="button"
-                                onClick={createUserAccount}
+                                onClick={loginUser}
                                 className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                             >
                                 <Loading
                                     loading={loading}
                                 >
-                                    Create an account
+                                    Login
                                 </Loading>
                             </button>
                             <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                                Already have an account? <a onClick={login} className="font-medium text-primary-600 hover:underline dark:text-primary-500">Login here</a>
+                                Don't have an account? <a onClick={register} className="font-medium text-primary-600 hover:underline dark:text-primary-500">Sign up here</a>
                             </p>
                         </form>
                     </div>

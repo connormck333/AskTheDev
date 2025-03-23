@@ -24,8 +24,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.UUID;
 
-import static com.devconnor.askthedev.utils.Utils.APPLICATION_JSON;
-import static com.devconnor.askthedev.utils.Utils.convertToJson;
+import static com.devconnor.askthedev.utils.Utils.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -71,7 +70,8 @@ class AuthenticationControllerTest {
 
     @Test
     void testLogin_WithValidEmailAndPassword() throws Exception {
-        when(authenticationService.login(any(HttpServletResponse.class), eq(VALID_EMAIL), eq(VALID_PASSWORD))).thenReturn(true);
+        ATDUserResponse userResponse = generateUserResponse();
+        when(authenticationService.login(any(HttpServletResponse.class), eq(VALID_EMAIL), eq(VALID_PASSWORD))).thenReturn(userResponse);
 
         String userAuthRequest = generateUserAuthRequest();
 

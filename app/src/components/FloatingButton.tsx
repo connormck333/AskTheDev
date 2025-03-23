@@ -12,7 +12,7 @@ type MenuItem = {
 
 interface FloatingButtonProps {
     setSignedIn: Function;
-}
+};
 
 export default function FloatingAccountButton(props: FloatingButtonProps): ReactElement {
 
@@ -29,7 +29,6 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
     ];
 
     function handleOptionClick(id: string) {
-        console.log(id);
         switch (id) {
             case "logout": 
                 logoutUser();
@@ -38,7 +37,6 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
     }
 
     async function logoutUser(): Promise<void> {
-        console.log("logging out");
         const response: Status = await logout();
         if (!response.success) {
             alert("There was an error logging you out. Please try again later.");

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Status, User } from '../utils/interfaces';
 import { createCheckoutSession } from '../methods/payments/createCheckoutSession';
 import Loading from '../components/Loading';
+import Button from '../components/Button';
+import { logout } from '../methods/userManagement/logout';
 
 const tiers = [
     {
@@ -32,16 +34,18 @@ const tiers = [
 ]
 
 interface SubscriptionScreenProps {
-    user: User,
+    user: User;
+    setSignedIn: Function;
 }
 
 export default function SubscriptionScreen(props: SubscriptionScreenProps) {
 
-    const { user } = props;
+    const { user, setSignedIn } = props;
     const [loading, setLoading] = useState<boolean>(false);
+    const [logoutLoading, setLogoutLoading] = useState<boolean>(false);
 
     async function startCheckout(tier: any): Promise<void> {
-        if (loading) {}
+        if (loading || logoutLoading) return;
         setLoading(true);
 
         const response: Status = await createCheckoutSession(user.userId, tier.id);
@@ -54,6 +58,21 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
         }
 
         redirectToCheckout(response.data.url);
+    }
+
+    async function logoutUser(): Promise<void> {
+        setLogoutLoading(true);
+
+        const response: Status = await logout();
+
+        setLogoutLoading(false);
+
+        if (!response.success) {
+            alert("There was an error logging you out. Please try again later.");
+            return;
+        }
+
+        setSignedIn(false);
     }
 
     async function redirectToCheckout(url: string): Promise<void> {
@@ -100,6 +119,13 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
                         </button>
                     </div>
                 ))}
+
+                <div className="mt-6">
+                    <Button
+                        label="Logout"
+                        onClick={logoutUser}
+                    />
+                </div>
             </div>
         </div>  
     );

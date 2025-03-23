@@ -1,6 +1,7 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
+import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.UserAuthRequest;
 import com.devconnor.askthedev.services.user.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,13 +20,13 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(HttpServletResponse response, @RequestBody UserAuthRequest userAuthRequest) {
-        boolean loginSuccessful = authenticationService.login(response, userAuthRequest.getEmail(), userAuthRequest.getPassword());
-        if (loginSuccessful) {
-            return ResponseEntity.ok("Login successful");
+    public ResponseEntity<ATDUserResponse> login(HttpServletResponse response, @RequestBody UserAuthRequest userAuthRequest) {
+        ATDUserResponse atdResponse = authenticationService.login(response, userAuthRequest.getEmail(), userAuthRequest.getPassword());
+        if (atdResponse != null && atdResponse.getEmail() != null) {
+            return ResponseEntity.ok(atdResponse);
         }
 
-        return new ResponseEntity<>("Login failed", HttpStatus.UNAUTHORIZED);
+        throw new UserNotFoundException(userAuthRequest.getEmail());
     }
 
     @PostMapping("/signup")

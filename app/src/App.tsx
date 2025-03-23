@@ -5,11 +5,14 @@ import RegisterScreen from './screens/RegisterScreen';
 import { Status, User } from './utils/interfaces';
 import { getCurrentUser } from './methods/userManagement/getCurrentUser';
 import SubscriptionScreen from './screens/SubscriptionScreen';
+import LoginScreen from './screens/LoginScreen';
+import ScreenType from './utils/ScreenType';
 
 function App(): ReactElement {
 
     const [signedIn, setSignedIn] = useState<boolean | undefined>(false);
     const [signedInUser, setSignedInUser] = useState<User | undefined>(undefined);
+    const [currentScreen, setCurrentScreen] = useState<ScreenType>(ScreenType.LOGIN);
 
     useEffect(() => {
         retrieveUserDetails();
@@ -36,10 +39,13 @@ function App(): ReactElement {
         <div className="items-center flex flex-col main-container">
             { 
                 !signedIn
-                ? <RegisterScreen setSignedIn={setSignedIn} setUser={setSignedInUser} />
+                ? (currentScreen === ScreenType.LOGIN
+                    ? <LoginScreen setSignedIn={setSignedIn} setUser={setSignedInUser} setCurrentScreen={setCurrentScreen} />
+                    : <RegisterScreen setSignedIn={setSignedIn} setUser={setSignedInUser} setCurrentScreen={setCurrentScreen} />
+                )
                 : (signedInUser?.activeSubscription
                     ? <PromptScreen setSignedIn={setSignedIn} user={signedInUser} />
-                    : <SubscriptionScreen user={signedInUser as User} />
+                    : <SubscriptionScreen setSignedIn={setSignedIn} user={signedInUser as User} />
                 )
             }
         </div>

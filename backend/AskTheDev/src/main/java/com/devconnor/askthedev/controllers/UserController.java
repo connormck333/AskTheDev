@@ -3,12 +3,10 @@ package com.devconnor.askthedev.controllers;
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.exception.InvalidSessionException;
 import com.devconnor.askthedev.exception.UserNotFoundException;
-import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.services.user.UserService;
-import com.stripe.service.SubscriptionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -75,13 +73,7 @@ public class UserController {
             return new ResponseEntity<>(atdUserResponse, HttpStatus.NOT_FOUND);
         }
 
-        ATDSubscription atdSubscription = subscriptionRepository.getSubscriptionByUserId(user.getId());
-
-        atdUserResponse.setUser(user);
-        atdUserResponse.setActiveSubscription(atdSubscription != null && atdSubscription.isActive());
-        if (atdSubscription != null) {
-            atdUserResponse.setSubscriptionType(atdSubscription.getType());
-        }
+        atdUserResponse = userService.getATDUserResponseByUser(user);
 
         return new ResponseEntity<>(atdUserResponse, HttpStatus.OK);
     }

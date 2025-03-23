@@ -6,6 +6,7 @@ import com.devconnor.askthedev.exception.InvalidSessionException;
 import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.RefreshToken;
 import com.devconnor.askthedev.models.User;
+import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.repositories.RefreshTokenRepository;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.security.JwtUtil;
@@ -31,15 +32,18 @@ public class AuthenticationService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtUtil jwtUtil;
+    private final UserService userService;
 
-    public boolean login(HttpServletResponse response, String email, String password) {
+    public ATDUserResponse login(HttpServletResponse response, String email, String password) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
             jwtUtil.saveHttpCookie(response, email);
-            return true;
+
+            UserDTO user = userService.getUserByEmail(email);
+            return userService.getATDUserResponseByUser(user);
         } catch (Exception ex) {
             throw new BadCredentialsException("Invalid email or password");
         }

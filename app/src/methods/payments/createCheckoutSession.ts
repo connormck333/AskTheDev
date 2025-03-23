@@ -12,8 +12,6 @@ async function createCheckoutSession(userId: string, tierId: string): Promise<St
         subscriptionType: tierId
     }
 
-    console.log(tierId);
-
     return await sendPostRequest("/payment/create-checkout", body);
 }
 

@@ -5,6 +5,7 @@ import com.devconnor.askthedev.exception.InvalidUserIdException;
 import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.models.UserDTO;
+import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,9 +28,12 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private SubscriptionRepository subscriptionRepository;
+
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository);
+        userService = new UserService(userRepository, subscriptionRepository);
     }
 
     @Test

@@ -57,6 +57,9 @@ class AuthenticationServiceTest {
     private JwtUtil jwtUtil;
 
     @Mock
+    private UserService userService;
+
+    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -75,7 +78,8 @@ class AuthenticationServiceTest {
                 passwordEncoder,
                 userRepository,
                 refreshTokenRepository,
-                jwtUtil
+                jwtUtil,
+                userService
         );
         SecurityContextHolder.setContext(mockedSecurityContext);
     }
@@ -91,9 +95,9 @@ class AuthenticationServiceTest {
                 .thenReturn(mockedAuthentication);
         doNothing().when(jwtUtil).saveHttpCookie(response, EMAIL);
 
-        boolean loginResponse = authenticationService.login(response, EMAIL, PASSWORD);
+        ATDUserResponse atdResponse = authenticationService.login(response, EMAIL, PASSWORD);
 
-        assertTrue(loginResponse);
+        assertNotNull(atdResponse);
     }
 
     @Test
