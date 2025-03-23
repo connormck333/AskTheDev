@@ -22,16 +22,11 @@ public class ATDExceptionHandler {
     @ExceptionHandler(value = {
             CustomerNotFoundException.class,
             UserNotFoundException.class,
-            SubscriptionNotFoundException.class
+            SubscriptionNotFoundException.class,
+            ExistingUsernameException.class
     })
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public @ResponseBody ATDErrorResponse handleNotFoundException(Exception e) {
-        return new ATDErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
-    }
-
-    @ExceptionHandler(value = ExistingUsernameException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public @ResponseBody ATDErrorResponse handleExistingUsernameException(ExistingUsernameException e) {
+    public @ResponseBody ATDErrorResponse handleBadRequestException(Exception e) {
         return new ATDErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
     }
 

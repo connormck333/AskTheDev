@@ -26,9 +26,6 @@ class ATDExceptionHandlerTest {
     @Mock
     private ATDException atdException;
 
-    @Mock
-    private ExistingUsernameException existingUsernameException;
-
     @BeforeEach
     void setUp() {
         handler = new ATDExceptionHandler();
@@ -43,31 +40,22 @@ class ATDExceptionHandlerTest {
     }
 
     @ParameterizedTest
-    @MethodSource("handleNotFoundExceptionContent")
+    @MethodSource("handleBadRequestExceptionContent")
     void handleNotFoundException(ATDException e, String message) {
         when(e.getMessage()).thenReturn(message);
-        ATDErrorResponse response = handler.handleNotFoundException(e);
+        ATDErrorResponse response = handler.handleBadRequestException(e);
 
-        assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatusCode());
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
         assertEquals(message, response.getMessage());
     }
 
-    private static Stream<Arguments> handleNotFoundExceptionContent() {
+    private static Stream<Arguments> handleBadRequestExceptionContent() {
         return Stream.of(
                 Arguments.of(mock(CustomerNotFoundException.class), "Customer not found."),
                 Arguments.of(mock(UserNotFoundException.class), "User not found."),
-                Arguments.of(mock(SubscriptionNotFoundException.class), "Subscription not found.")
+                Arguments.of(mock(SubscriptionNotFoundException.class), "Subscription not found."),
+                Arguments.of(mock(ExistingUsernameException.class), "A user with this email already exists.")
         );
-    }
-
-    @Test
-    void handleExistingUsernameException() {
-        when(existingUsernameException.getMessage()).thenReturn("A user with this email already exists.");
-
-        ATDErrorResponse response = handler.handleExistingUsernameException(existingUsernameException);
-
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
-        assertEquals("A user with this email already exists.", response.getMessage());
     }
 
     @ParameterizedTest

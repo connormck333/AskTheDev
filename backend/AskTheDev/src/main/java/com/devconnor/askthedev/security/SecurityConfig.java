@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/auth/login", "/auth/signup", "/payment/event").permitAll()
+                        .requestMatchers("/auth/login", "/auth/signup", "/auth/logout", "/payment/event").permitAll()
                         .anyRequest().authenticated()
                 );
 

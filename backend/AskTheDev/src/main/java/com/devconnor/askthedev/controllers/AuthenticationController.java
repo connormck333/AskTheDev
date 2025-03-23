@@ -3,6 +3,7 @@ package com.devconnor.askthedev.controllers;
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.models.UserAuthRequest;
 import com.devconnor.askthedev.services.user.AuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,5 +32,11 @@ public class AuthenticationController {
     public ResponseEntity<ATDUserResponse> registerUser(HttpServletResponse response, @RequestBody UserAuthRequest userAuthRequest) {
         ATDUserResponse userResponse = authenticationService.register(response, userAuthRequest.getEmail(), userAuthRequest.getPassword());
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Boolean> logout(HttpServletRequest request, HttpServletResponse response) {
+        authenticationService.logout(request, response);
+        return new ResponseEntity<>(true, HttpStatus.OK);
     }
 }

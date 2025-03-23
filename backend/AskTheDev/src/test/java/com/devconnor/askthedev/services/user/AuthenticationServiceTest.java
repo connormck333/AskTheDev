@@ -2,10 +2,16 @@ package com.devconnor.askthedev.services.user;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.exception.ExistingUsernameException;
+import com.devconnor.askthedev.exception.InvalidSessionException;
+import com.devconnor.askthedev.exception.UserNotFoundException;
+import com.devconnor.askthedev.models.RefreshToken;
 import com.devconnor.askthedev.models.User;
+import com.devconnor.askthedev.repositories.RefreshTokenRepository;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.security.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +21,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.UUID;
@@ -23,15 +30,15 @@ import java.util.UUID;
 import static com.devconnor.askthedev.utils.Utils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
 
     private static final String ENCODED_PASSWORD = "encodedPassword";
     private static final String REGISTER_SUCCESS_MESSAGE = "User registered successfully.";
-    
+    private static final String SESSION_TOKEN = "sessionToken";
+
     private AuthenticationService authenticationService;
 
     @Mock
@@ -44,7 +51,13 @@ class AuthenticationServiceTest {
     private UserRepository userRepository;
 
     @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
     private JwtUtil jwtUtil;
+
+    @Mock
+    private HttpServletRequest request;
 
     @Mock
     private HttpServletResponse response;
@@ -52,14 +65,24 @@ class AuthenticationServiceTest {
     @Mock
     private Authentication mockedAuthentication;
 
+    @Mock
+    private SecurityContext mockedSecurityContext;
+
     @BeforeEach
     void setUp() {
         authenticationService = new AuthenticationService(
                 authenticationManager,
                 passwordEncoder,
                 userRepository,
+                refreshTokenRepository,
                 jwtUtil
         );
+        SecurityContextHolder.setContext(mockedSecurityContext);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -104,5 +127,68 @@ class AuthenticationServiceTest {
         when(userRepository.existsUserByEmail(EMAIL)).thenReturn(true);
 
         assertThrows(ExistingUsernameException.class, () -> authenticationService.register(response, EMAIL, PASSWORD));
+    }
+
+    @Test
+    void testLogout_Successful() {
+        RefreshToken refreshToken = createRefreshToken();
+
+        when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
+        when(mockedAuthentication.isAuthenticated()).thenReturn(true);
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + SESSION_TOKEN);
+        when(refreshTokenRepository.findByToken(SESSION_TOKEN)).thenReturn(refreshToken);
+
+        assertDoesNotThrow(() -> authenticationService.logout(request, response));
+    }
+
+    @Test
+    void testLogout_WhenNotLoggedIn() {
+        when(mockedSecurityContext.getAuthentication()).thenReturn(null);
+
+        assertThrows(UserNotFoundException.class, () -> authenticationService.logout(request, response));
+    }
+
+    @Test
+    void testLogout_WhenNotAuthenticated() {
+        when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
+        when(mockedAuthentication.isAuthenticated()).thenReturn(false);
+
+        assertThrows(UserNotFoundException.class, () -> authenticationService.logout(request, response));
+    }
+
+    @Test
+    void testLogout_WhenRequestSentWithoutToken() {
+        when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
+        when(mockedAuthentication.isAuthenticated()).thenReturn(true);
+        when(request.getHeader("Authorization")).thenReturn(null);
+
+        assertThrows(InvalidSessionException.class, () -> authenticationService.logout(request, response));
+    }
+
+    @Test
+    void testLogout_WhenRequestSentWithInvalidToken() {
+        when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
+        when(mockedAuthentication.isAuthenticated()).thenReturn(true);
+        when(request.getHeader("Authorization")).thenReturn("invalid " + SESSION_TOKEN);
+
+        assertThrows(InvalidSessionException.class, () -> authenticationService.logout(request, response));
+    }
+
+    @Test
+    void testLogout_WhenRefreshTokenDoesNotExist() {
+        when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
+        when(mockedAuthentication.isAuthenticated()).thenReturn(true);
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + SESSION_TOKEN);
+        when(refreshTokenRepository.findByToken(SESSION_TOKEN)).thenReturn(null);
+
+        assertThrows(InvalidSessionException.class, () -> authenticationService.logout(request, response));
+    }
+
+    private static RefreshToken createRefreshToken() {
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(SESSION_TOKEN);
+        refreshToken.setActive(true);
+
+        return refreshToken;
     }
 }

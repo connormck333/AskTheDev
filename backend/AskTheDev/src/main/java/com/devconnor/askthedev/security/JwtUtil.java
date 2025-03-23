@@ -1,5 +1,7 @@
 package com.devconnor.askthedev.security;
 
+import com.devconnor.askthedev.models.RefreshToken;
+import com.devconnor.askthedev.repositories.RefreshTokenRepository;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -17,16 +19,17 @@ import java.util.Date;
 
 import static com.devconnor.askthedev.utils.Constants.COOKIE_EXPIRATION_TIME;
 
-
 @Service
 public class JwtUtil {
 
     private static final Key JWT_SECRET = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     private final JwtParser jwtParser;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public JwtUtil() {
+    public JwtUtil(RefreshTokenRepository refreshTokenRepository) {
         jwtParser = Jwts.parserBuilder().setSigningKey(JWT_SECRET).build();
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public String generateJwtToken(String userEmail) {
@@ -64,6 +67,7 @@ public class JwtUtil {
 
     public void saveHttpCookie(HttpServletResponse response, String email) {
         String jwtToken = generateJwtToken(email);
+        saveRefreshToken(jwtToken);
 
         ResponseCookie responseCookie = ResponseCookie.from("token", jwtToken)
                 .httpOnly(true)
@@ -85,6 +89,14 @@ public class JwtUtil {
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse(null);
+    }
+
+    private void saveRefreshToken(String token) {
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setActive(true);
+        refreshToken.setToken(token);
+
+        refreshTokenRepository.save(refreshToken);
     }
 
     public Key getSecret() {

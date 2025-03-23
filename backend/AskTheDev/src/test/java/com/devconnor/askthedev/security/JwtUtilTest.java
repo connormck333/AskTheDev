@@ -1,5 +1,6 @@
 package com.devconnor.askthedev.security;
 
+import com.devconnor.askthedev.repositories.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -27,6 +28,9 @@ class JwtUtilTest {
     private JwtUtil jwtUtil;
 
     @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
     private HttpServletRequest request;
 
     @Mock
@@ -36,7 +40,7 @@ class JwtUtilTest {
 
     @BeforeEach
     void setUp() {
-        jwtUtil = new JwtUtil();
+        jwtUtil = new JwtUtil(refreshTokenRepository);
     }
 
     @Test

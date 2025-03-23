@@ -1,11 +1,13 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
+import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.UserAuthRequest;
 import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.security.SecurityConfig;
 import com.devconnor.askthedev.services.user.AuthenticationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -77,6 +80,24 @@ class AuthenticationControllerTest {
                         .content(userAuthRequest)
                 )
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    void testLogout_Successful_WhenLoggedIn() throws Exception {
+        doNothing().when(authenticationService).logout(any(HttpServletRequest.class), any(HttpServletResponse.class));
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/logout"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testLogout_WhenNotLoggedIn() throws Exception {
+        doThrow(UserNotFoundException.class)
+                .when(authenticationService).logout(any(HttpServletRequest.class), any(HttpServletResponse.class));
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/logout"))
+                .andExpect(status().isBadRequest());
     }
 
     private String generateUserAuthRequest() throws JsonProcessingException {
