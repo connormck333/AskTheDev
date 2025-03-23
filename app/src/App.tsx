@@ -36,7 +36,7 @@ function App(): ReactElement {
         <div className="items-center flex flex-col main-container">
             { 
                 !signedIn
-                ? <RegisterScreen />
+                ? <RegisterScreen setSignedIn={setSignedIn} setUser={setSignedInUser} />
                 : (signedInUser?.activeSubscription
                     ? <PromptScreen user={signedInUser} />
                     : <SubscriptionScreen user={signedInUser as User} />

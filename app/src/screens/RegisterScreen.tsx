@@ -4,8 +4,14 @@ import { isValidEmail, isValidPassword } from "../utils/inputValidation";
 import { Status } from "../utils/interfaces";
 import { createAccount } from "../methods/userManagement/createAccount";
 
-export default function RegisterScreen(): ReactElement {
+interface RegisterScreenProps {
+    setUser: Function;
+    setSignedIn: Function;
+}
 
+export default function RegisterScreen(props: RegisterScreenProps): ReactElement {
+
+    const { setUser, setSignedIn } = props;
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -28,6 +34,9 @@ export default function RegisterScreen(): ReactElement {
             alert("There was an error creating your account. Please try again later.");
             return;
         }
+
+        setSignedIn(true);
+        setUser(response.data);
     }
 
     return (

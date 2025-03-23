@@ -80,7 +80,7 @@ Please ask me anything, I am already caught up with your current webpage!
             </div>
             <>
                 <Input
-                    userId={user.userId}
+                    user={user}
                     prompt={[prompt, setPrompt]}
                     loading={[loading, setLoading]}
                     chatStream={[chatStream, setChatStream]}

@@ -1,11 +1,14 @@
 import { ChangeEvent, Dispatch, ReactElement, SetStateAction } from "react";
-import { Chat, Status } from "../utils/interfaces";
+import { Chat, Status, User } from "../utils/interfaces";
 import { sendQuestionToOpenAI } from "../methods/prompts/sendQuestionToOpenAI";
 import Spinner from "./Spinner";
 import UserType from "../utils/UserType";
+import Button from "./Button";
+import SubscriptionType from "../utils/SubscriptionType";
+import { summariseWebPage } from "../methods/prompts/summariseWebPage";
 
 interface InputProps {
-    userId: string,
+    user: User,
     chatStream: [Chat[], Dispatch<SetStateAction<Chat[]>>],
     prompt: [string, Dispatch<SetStateAction<string>>],
     loading: [boolean, Dispatch<SetStateAction<boolean>>]
@@ -13,7 +16,7 @@ interface InputProps {
 
 export default function Input(props: InputProps): ReactElement {
 
-    const { userId } = props;
+    const { user } = props;
     const [chatStream, setChatStream] = props.chatStream;
     const [prompt, setPrompt] =  props.prompt;
     const [loading, setLoading] = props.loading;
@@ -25,19 +28,11 @@ export default function Input(props: InputProps): ReactElement {
             return;
         }
 
-        const savedStream: Chat[] = chatStream;
-        savedStream.push({
-            message: prompt,
-            userType: UserType.Client,
-            timestamp: Date.now()
-        });
-
-        setChatStream([...savedStream]);
-        setPrompt("");
+        loadNewPrompt(prompt);
 
         setLoading(true);
 
-        const response: Status = await sendQuestionToOpenAI(userId, prompt);
+        const response: Status = await sendQuestionToOpenAI(user.userId, prompt);
 
         setLoading(false);
 
@@ -46,11 +41,50 @@ export default function Input(props: InputProps): ReactElement {
             return;
         }
 
-        setChatStream([...savedStream, {
+        setChatStream([...chatStream, {
             message: response.data.prompt.openAIResponse,
             userType: UserType.AI,
             timestamp: Date.now()
         }]);
+    }
+
+    async function summarisePage(): Promise<void> {
+        if (loading) return;
+        if (user.subscriptionType?.valueOf() === SubscriptionType.BASIC.valueOf()) {
+            alert("Upgrade to Pro to access this feature.");
+            return;
+        }
+
+        loadNewPrompt("Summarise this web page.");
+
+        setLoading(true);
+
+        const response: Status = await summariseWebPage(user.userId);
+
+        setLoading(false);
+
+        if (!response || !response.data) {
+            alert("There was an error communicating with OpenAI. Please try again later.");
+            return;
+        }
+
+        setChatStream([...chatStream, {
+            message: response.data.prompt.openAIResponse,
+            userType: UserType.AI,
+            timestamp: Date.now()
+        }]);
+    }
+
+    function loadNewPrompt(promptMessage: string): void {
+        const savedStream: Chat[] = chatStream;
+        savedStream.push({
+            message: promptMessage,
+            userType: UserType.Client,
+            timestamp: Date.now()
+        });
+
+        setChatStream([...savedStream]);
+        setPrompt("");
     }
 
     function onEnterKeyPressed(e: React.KeyboardEvent<HTMLTextAreaElement>): void {
@@ -65,7 +99,7 @@ export default function Input(props: InputProps): ReactElement {
     }
 
     return (
-        <div className="relative w-[32rem] mt-10">
+        <div className="relative w-[32rem] mt-[5]">
             <form
                 className="relative w-full min-w-[200px]"
             >
@@ -81,14 +115,17 @@ export default function Input(props: InputProps): ReactElement {
                     Your Question
                 </label>
             </form>
-            <div className="flex w-full justify-end py-1.5">
-                <div className="flex gap-2">
-                    <button
-                        onClick={closeWindow}
-                        className="px-4 py-2 font-sans text-xs font-bold text-center text-gray-900 uppercase align-middle transition-all rounded-md select-none hover:bg-gray-900/10 active:bg-gray-900/20 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-                        type="button">
-                        Close
-                    </button>
+            <div className="flex w-full justify-between py-1.5">
+                <Button
+                    label="Close"
+                    onClick={closeWindow}
+                />
+                <div className="flex justify-end gap-2">
+                    <Button
+                        label="Summarise"
+                        onClick={summarisePage}
+                        backgroundColor="#E4E4E4"
+                    />
                     <button
                         onClick={submitPrompt}
                         className="select-none rounded-md bg-blue-500 w-20 h-8 text-center align-middle flex justify-center font-sans text-xs font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
