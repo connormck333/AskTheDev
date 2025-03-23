@@ -3,6 +3,7 @@ import FormInput from "../components/FormInput";
 import { isValidEmail, isValidPassword } from "../utils/inputValidation";
 import { Status } from "../utils/interfaces";
 import { createAccount } from "../methods/userManagement/createAccount";
+import Loading from "../components/Loading";
 
 interface RegisterScreenProps {
     setUser: Function;
@@ -15,6 +16,7 @@ export default function RegisterScreen(props: RegisterScreenProps): ReactElement
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [confirmPassword, setConfirmPassword] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
 
     async function createUserAccount(): Promise<void> {
         if (!isValidEmail(email)) {
@@ -28,7 +30,11 @@ export default function RegisterScreen(props: RegisterScreenProps): ReactElement
             return;
         }
 
+        setLoading(true);
+
         const response: Status = await createAccount(email, password);
+
+        setLoading(false);
 
         if (!response.success) {
             alert("There was an error creating your account. Please try again later.");
@@ -81,7 +87,13 @@ export default function RegisterScreen(props: RegisterScreenProps): ReactElement
                                 type="button"
                                 onClick={createUserAccount}
                                 className="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                            >Create an account</button>
+                            >
+                                <Loading
+                                    loading={loading}
+                                >
+                                    Create an account
+                                </Loading>
+                            </button>
                             <p className="text-sm font-light text-gray-500 dark:text-gray-400">
                                 Already have an account? <a href="#" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Login here</a>
                             </p>

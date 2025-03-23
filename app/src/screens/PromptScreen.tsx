@@ -6,6 +6,7 @@ import Input from "../components/Input";
 import { Chat, SendPromptResponse, Status, User } from "../utils/interfaces";
 import UserType from "../utils/UserType";
 import { getPreviousPromptsByPage } from "../methods/prompts/getPreviousPrompts";
+import FloatingAccountButton from "../components/FloatingButton";
 
 interface PromptScreenProps {
     user: User
@@ -86,6 +87,7 @@ Please ask me anything, I am already caught up with your current webpage!
                     chatStream={[chatStream, setChatStream]}
                 />
             </>
+            <FloatingAccountButton />
         </div>
     );
 }

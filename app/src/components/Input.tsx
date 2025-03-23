@@ -1,7 +1,6 @@
 import { ChangeEvent, Dispatch, ReactElement, SetStateAction } from "react";
 import { Chat, Status, User } from "../utils/interfaces";
 import { sendQuestionToOpenAI } from "../methods/prompts/sendQuestionToOpenAI";
-import Spinner from "./Spinner";
 import UserType from "../utils/UserType";
 import Button from "./Button";
 import SubscriptionType from "../utils/SubscriptionType";
@@ -126,15 +125,12 @@ export default function Input(props: InputProps): ReactElement {
                         onClick={summarisePage}
                         backgroundColor="#E4E4E4"
                     />
-                    <button
+                    <Button
+                        label="Submit"
                         onClick={submitPrompt}
-                        className="select-none rounded-md bg-blue-500 w-20 h-8 text-center align-middle flex justify-center font-sans text-xs font-bold uppercase text-white shadow-md shadow-gray-900/10 transition-all hover:shadow-lg hover:shadow-gray-900/20 focus:opacity-[0.85] focus:shadow-none active:opacity-[0.85] active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
-                        type="button"
-                    >
-                        { loading ?
-                            <Spinner />
-                        : "Submit"}
-                    </button>
+                        backgroundColor="#2b7fff"
+                        fontColor="#FFF"
+                    />
                 </div>
             </div>
         </div>

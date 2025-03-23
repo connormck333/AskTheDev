@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Status, User } from '../utils/interfaces';
 import { createCheckoutSession } from '../methods/payments/createCheckoutSession';
+import Loading from '../components/Loading';
 
 const tiers = [
     {
@@ -90,7 +91,13 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
                             type="button"
                             onClick={() => startCheckout(tier)}
                             className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
-                        >Subscribe to { tier.name }</button>
+                        >
+                            <Loading
+                                loading={loading}
+                            >
+                                Subscribe to { tier.name }
+                            </Loading>
+                        </button>
                     </div>
                 ))}
             </div>
