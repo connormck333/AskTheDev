@@ -38,7 +38,7 @@ function App(): ReactElement {
                 !signedIn
                 ? <RegisterScreen setSignedIn={setSignedIn} setUser={setSignedInUser} />
                 : (signedInUser?.activeSubscription
-                    ? <PromptScreen user={signedInUser} />
+                    ? <PromptScreen setSignedIn={setSignedIn} user={signedInUser} />
                     : <SubscriptionScreen user={signedInUser as User} />
                 )
             }

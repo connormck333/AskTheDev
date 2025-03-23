@@ -72,10 +72,8 @@ public class AuthenticationService {
         if (auth != null && auth.isAuthenticated()) {
              new SecurityContextLogoutHandler().logout(request, response, auth);
 
-             String token = request.getHeader("Authorization");
-             if (token != null && token.startsWith("Bearer ")) {
-                 token = token.substring(7);
-             } else {
+             String token = jwtUtil.getTokenFromCookie(request);
+             if (token == null) {
                  throw new InvalidSessionException();
              }
 

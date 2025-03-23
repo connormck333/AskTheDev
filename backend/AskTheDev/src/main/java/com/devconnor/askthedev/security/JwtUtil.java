@@ -54,6 +54,9 @@ public class JwtUtil {
 
         if (token == null) return false;
 
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(token);
+        if (refreshToken == null || !refreshToken.isActive()) return false;
+
         try {
             return (userEmail.equalsIgnoreCase(extractUserEmail(token)) && !isTokenExpired(token));
         } catch (Exception e) {

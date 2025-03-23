@@ -9,12 +9,13 @@ import { getPreviousPromptsByPage } from "../methods/prompts/getPreviousPrompts"
 import FloatingAccountButton from "../components/FloatingButton";
 
 interface PromptScreenProps {
-    user: User
+    user: User;
+    setSignedIn: Function;
 }
 
 export default function PromptScreen(props: PromptScreenProps): ReactElement {
 
-    const { user } = props;
+    const { user, setSignedIn } = props;
     const [chatStream, setChatStream] = useState<Chat[]>([{
         message: `
 ### Welcome to AskTheDev!
@@ -87,7 +88,7 @@ Please ask me anything, I am already caught up with your current webpage!
                     chatStream={[chatStream, setChatStream]}
                 />
             </>
-            <FloatingAccountButton />
+            <FloatingAccountButton setSignedIn={setSignedIn} />
         </div>
     );
 }
