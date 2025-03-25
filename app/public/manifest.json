@@ -4,7 +4,8 @@
     "version": "1.0.0",
     "description": "AI Chrome Extension - Ask AI questions about the webpage you are on.",
     "action": {
-      "default_popup": "index.html"
+      "default_popup": "index.html",
+      "default_icon": "icon.png"
     },
     "permissions": ["scripting", "activeTab", "tabs"],
     "host_permissions": ["<all_urls>"]
