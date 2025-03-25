@@ -5,11 +5,13 @@ import Output from "./Output";
 import Question from "./Question";
 
 interface ChatStreamProps {
-    stream: [Chat[], Dispatch<SetStateAction<Chat[]>>]
+    stream: [Chat[], Dispatch<SetStateAction<Chat[]>>];
+    loading: boolean;
 }
 
 export default function ChatStream(props: ChatStreamProps): ReactElement {
 
+    const { loading } = props;
     const [stream] = props.stream;
 
     return (
@@ -24,6 +26,11 @@ export default function ChatStream(props: ChatStreamProps): ReactElement {
                         value={item}
                     />
             )) }
+            { loading &&
+                <Output
+                    loading={true}
+                />
+            }
         </div>
     );
 }

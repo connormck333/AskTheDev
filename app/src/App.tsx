@@ -36,7 +36,7 @@ function App(): ReactElement {
     }
   
     return (
-        <div className="items-center flex flex-col main-container">
+        <div className="items-center justify-center flex flex-col main-container min-h-[500px]">
             { 
                 !signedIn
                 ? (currentScreen === ScreenType.LOGIN

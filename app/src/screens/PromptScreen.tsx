@@ -77,6 +77,7 @@ Please ask me anything, I am already caught up with your current webpage!
                     <Logo />
                     <ChatStream
                         stream={[chatStream, setChatStream]}
+                        loading={loading}
                     />
                 </ScrollContainerContext.Provider>
             </div>
