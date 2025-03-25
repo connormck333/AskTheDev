@@ -4,27 +4,21 @@ import com.devconnor.askthedev.exception.*;
 import com.devconnor.askthedev.models.ATDErrorResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class ATDExceptionHandlerTest {
 
-    private ATDExceptionHandler handler;
+    private static final String ERROR_PREFIX = "[ATD] ERROR: %s";
 
-    @Mock
-    private ATDException atdException;
+    private ATDExceptionHandler handler;
 
     @BeforeEach
     void setUp() {
@@ -33,65 +27,78 @@ class ATDExceptionHandlerTest {
 
     @Test
     void handleATDException() {
-        ATDErrorResponse response = handler.handleATDException(atdException);
+        ATDException exception = new ATDException();
+
+        ATDErrorResponse response = handler.handleATDException(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
-        assertEquals("[ATD] Error: An error occurred.", response.getMessage());
+        assertExceptionMessage("An unknown error occurred.", response.getMessage());
     }
 
     @ParameterizedTest
     @MethodSource("handleBadRequestExceptionContent")
     void handleNotFoundException(ATDException e, String message) {
-        when(e.getMessage()).thenReturn(message);
         ATDErrorResponse response = handler.handleBadRequestException(e);
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
-        assertEquals(message, response.getMessage());
+        assertExceptionMessage(message, response.getMessage());
     }
 
     private static Stream<Arguments> handleBadRequestExceptionContent() {
         return Stream.of(
-                Arguments.of(mock(CustomerNotFoundException.class), "Customer not found."),
-                Arguments.of(mock(UserNotFoundException.class), "User not found."),
-                Arguments.of(mock(SubscriptionNotFoundException.class), "Subscription not found."),
-                Arguments.of(mock(ExistingUsernameException.class), "A user with this email already exists.")
+                Arguments.of(new CustomerNotFoundException(), "Customer not found."),
+                Arguments.of(new UserNotFoundException(), "User not found."),
+                Arguments.of(new SubscriptionNotFoundException(), "Subscription not found."),
+                Arguments.of(new ExistingUsernameException(), "A user with this email already exists.")
         );
     }
 
     @ParameterizedTest
     @MethodSource("handleInvalidExceptionContent")
     void handleInvalidException(ATDException e, String message) {
-        when(e.getMessage()).thenReturn(message);
         ATDErrorResponse response = handler.handleInvalidException(e);
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
-        assertEquals(message, response.getMessage());
+        assertExceptionMessage(message, response.getMessage());
     }
 
     private static Stream<Arguments> handleInvalidExceptionContent() {
+        UUID userId = UUID.randomUUID();
         return Stream.of(
-                Arguments.of(mock(InvalidUserIdException.class), "Invalid user ID: %s"),
-                Arguments.of(mock(InvalidEventException.class), "Invalid event."),
-                Arguments.of(mock(InvalidPromptException.class), "Invalid prompt.")
+                Arguments.of(new InvalidUserIdException(userId), String.format("Invalid user ID: %s", userId)),
+                Arguments.of(new InvalidEventException(), "Invalid event."),
+                Arguments.of(new InvalidPromptException(), "Invalid prompt.")
         );
     }
 
     @ParameterizedTest
     @MethodSource("handleForbiddenExceptionContent")
     void handleInvalidSessionException(ATDException e, String message) {
-        when(e.getMessage()).thenReturn(message);
-
         ATDErrorResponse response = handler.handleInvalidSessionException(e);
 
         assertEquals(HttpStatus.FORBIDDEN.value(), response.getStatusCode());
-        assertEquals(message, response.getMessage());
+        assertExceptionMessage(message, response.getMessage());
     }
 
     private static Stream<Arguments> handleForbiddenExceptionContent() {
         return Stream.of(
-                Arguments.of(mock(InvalidSessionException.class), "Invalid session."),
-                Arguments.of(mock(InvalidSubscriptionException.class), "Invalid subscription."),
-                Arguments.of(mock(PromptLimitReachedException.class), "Prompt limit reached.")
+                Arguments.of(new InvalidSessionException(), "Invalid session."),
+                Arguments.of(new InvalidSubscriptionException(), "Invalid subscription."),
+                Arguments.of(new PromptLimitReachedException(), "Prompt limit reached.")
         );
+    }
+
+    @Test
+    void handleExistingUsernameException() {
+        ExistingUsernameException exception = new ExistingUsernameException();
+
+        ATDErrorResponse response = handler.handleExistingUsernameException(exception);
+
+        assertEquals(HttpStatus.CONFLICT.value(), response.getStatusCode());
+        assertExceptionMessage("A user with this email already exists.", response.getMessage());
+    }
+
+    private static void assertExceptionMessage(String expectedMessage, String actualMessage) {
+        assertEquals(String.format(ERROR_PREFIX, expectedMessage), actualMessage);
     }
 }

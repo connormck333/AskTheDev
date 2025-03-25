@@ -11,19 +11,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class ATDExceptionHandler {
 
-    private static final String PREFIX = "[ATD] Error: %s";
-
     @ExceptionHandler(value = ATDException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody ATDErrorResponse handleATDException(ATDException e) {
-        return new ATDErrorResponse(HttpStatus.BAD_REQUEST.value(), String.format(PREFIX, "An error occurred."));
+        return new ATDErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
     }
 
     @ExceptionHandler(value = {
             CustomerNotFoundException.class,
             UserNotFoundException.class,
-            SubscriptionNotFoundException.class,
-            ExistingUsernameException.class
+            SubscriptionNotFoundException.class
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody ATDErrorResponse handleBadRequestException(Exception e) {
@@ -48,5 +45,11 @@ public class ATDExceptionHandler {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public @ResponseBody ATDErrorResponse handleInvalidSessionException(Exception e) {
         return new ATDErrorResponse(HttpStatus.FORBIDDEN.value(), e.getMessage());
+    }
+
+    @ExceptionHandler(value = ExistingUsernameException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public @ResponseBody ATDErrorResponse handleExistingUsernameException(ExistingUsernameException e) {
+        return new ATDErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
     }
 }
