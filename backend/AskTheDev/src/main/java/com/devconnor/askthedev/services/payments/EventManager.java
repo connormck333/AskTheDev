@@ -3,9 +3,11 @@ package com.devconnor.askthedev.services.payments;
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
 import com.devconnor.askthedev.exception.InvalidEventException;
 import com.devconnor.askthedev.exception.SubscriptionNotFoundException;
+import com.devconnor.askthedev.models.ATDPayment;
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.PendingEvent;
 import com.devconnor.askthedev.models.UserDTO;
+import com.devconnor.askthedev.repositories.PaymentRepository;
 import com.devconnor.askthedev.repositories.PendingEventRepository;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.services.user.UserService;
@@ -17,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -26,6 +29,7 @@ public class EventManager {
     private final UserService userService;
     private final SubscriptionRepository subscriptionRepository;
     private final PendingEventRepository pendingEventRepository;
+    private final PaymentRepository paymentRepository;
 
     private static final String ACTIVE = "active";
 
@@ -92,6 +96,7 @@ public class EventManager {
         atdSubscription.setStatus(ACTIVE);
 
         subscriptionRepository.save(atdSubscription);
+        savePayment(invoice, atdSubscription.getUserId(), true);
     }
 
     public void handleFailedPayment(Event event) {
@@ -107,6 +112,7 @@ public class EventManager {
         atdSubscription.setActive(false);
         atdSubscription.setStatus(getSubscriptionStatusById(subscriptionId));
         subscriptionRepository.save(atdSubscription);
+        savePayment(invoice, atdSubscription.getUserId(), false);
     }
 
     private void subscriptionNotFound(Event event, String subscriptionId) {
@@ -145,5 +151,15 @@ public class EventManager {
         SubscriptionItem subscriptionItem = subscription.getItems().getData().getFirst();
         String priceId = subscriptionItem.getPrice().getId();
         return SubscriptionType.fromString(priceId);
+    }
+
+    private void savePayment(Invoice invoice, UUID userId, boolean success) {
+        ATDPayment atdPayment = new ATDPayment();
+        atdPayment.setUserId(userId);
+        atdPayment.setSuccess(success);
+        atdPayment.setAmount(invoice.getAmountPaid());
+        atdPayment.setStripeSubscriptionId(invoice.getSubscription());
+
+        paymentRepository.save(atdPayment);
     }
 }

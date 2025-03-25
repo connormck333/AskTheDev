@@ -6,6 +6,7 @@ import com.devconnor.askthedev.exception.SubscriptionNotFoundException;
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.PendingEvent;
 import com.devconnor.askthedev.models.UserDTO;
+import com.devconnor.askthedev.repositories.PaymentRepository;
 import com.devconnor.askthedev.repositories.PendingEventRepository;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.services.user.UserService;
@@ -44,6 +45,9 @@ class EventManagerTest {
     private PendingEventRepository pendingEventRepository;
 
     @Mock
+    private PaymentRepository paymentRepository;
+
+    @Mock
     private Event mockedEvent;
 
     @Mock
@@ -54,7 +58,7 @@ class EventManagerTest {
     @BeforeEach
     void setup() {
         Stripe.apiKey = "sk_test_dummyKey";
-        eventManager = new EventManager(userService, subscriptionRepository, pendingEventRepository);
+        eventManager = new EventManager(userService, subscriptionRepository, pendingEventRepository, paymentRepository);
         mockedSubscription = mockStatic(Subscription.class);
     }
 
@@ -365,6 +369,7 @@ class EventManagerTest {
     private static Invoice createInvoice() {
         Invoice invoice = new Invoice();
         invoice.setSubscription(SUBSCRIPTION_ID);
+        invoice.setAmountPaid(100L);
 
         return invoice;
     }
