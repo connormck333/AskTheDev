@@ -1,13 +1,14 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.request.PaymentRequest;
-import com.devconnor.askthedev.controllers.response.CheckoutSession;
-import com.devconnor.askthedev.exception.ATDException;
+import com.devconnor.askthedev.controllers.response.ResponseUrl;
 import com.devconnor.askthedev.services.payments.StripeService;
 import com.stripe.model.Event;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/payment")
@@ -21,24 +22,24 @@ public class PaymentsController {
             @RequestBody String payload,
             @RequestHeader("Stripe-Signature") String stripeSig
     ) {
-        try {
-            Event event = stripeService.validateAndRetrieveEvent(stripeSig, payload);
-            stripeService.handleEvent(event);
-            return ResponseEntity.ok("Purchase successful");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Bad Request");
-        }
+        Event event = stripeService.validateAndRetrieveEvent(stripeSig, payload);
+        stripeService.handleEvent(event);
+        return ResponseEntity.ok("Purchase successful");
     }
 
     @PostMapping("/create-checkout")
-    public ResponseEntity<CheckoutSession> createPaymentIntent(
+    public ResponseEntity<ResponseUrl> createPaymentIntent(
             @RequestBody PaymentRequest paymentRequest
     ) {
-        try {
-            String url = stripeService.createCheckoutSession(paymentRequest.getSubscriptionType(), paymentRequest.getUserId());
-            return ResponseEntity.ok(new CheckoutSession(url));
-        } catch (ATDException e) {
-            return ResponseEntity.status(500).body(null);
-        }
+        String url = stripeService.createCheckoutSession(paymentRequest.getSubscriptionType(), paymentRequest.getUserId());
+        return ResponseEntity.ok(new ResponseUrl(url));
+    }
+
+    @GetMapping("/manage-subscription")
+    public ResponseEntity<ResponseUrl> manageSubscription(
+            @RequestParam("userId") UUID userId
+    ) {
+        String url = stripeService.createBillingPortalSession(userId);
+        return ResponseEntity.ok(new ResponseUrl(url));
     }
 }

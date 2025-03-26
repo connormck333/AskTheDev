@@ -89,7 +89,10 @@ Please ask me anything, I am already caught up with your current webpage!
                     chatStream={[chatStream, setChatStream]}
                 />
             </>
-            <FloatingAccountButton setSignedIn={setSignedIn} />
+            <FloatingAccountButton
+                userId={user.userId}
+                setSignedIn={setSignedIn}
+            />
         </div>
     );
 }

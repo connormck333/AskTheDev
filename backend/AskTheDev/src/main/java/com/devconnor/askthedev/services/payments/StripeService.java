@@ -2,6 +2,7 @@ package com.devconnor.askthedev.services.payments;
 
 import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
+import com.devconnor.askthedev.exception.InvalidEventException;
 import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
@@ -12,16 +13,18 @@ import com.stripe.exception.SignatureVerificationException;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
+import com.stripe.model.billingportal.Configuration;
+import com.stripe.param.billingportal.ConfigurationCreateParams.Features.SubscriptionUpdate.Product;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.billingportal.ConfigurationCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
+import com.stripe.param.common.EmptyParam;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static com.devconnor.askthedev.utils.StripeEvents.*;
 
@@ -48,12 +51,16 @@ public class StripeService {
         this.userRepository = userRepository;
     }
 
-    public Event validateAndRetrieveEvent(String stripeSignature, String eventPayload) throws SignatureVerificationException {
-        return Webhook.constructEvent(eventPayload, stripeSignature, stripeEndpointSecret);
+    public Event validateAndRetrieveEvent(String stripeSignature, String eventPayload) {
+        try {
+            return Webhook.constructEvent(eventPayload, stripeSignature, stripeEndpointSecret);
+        } catch (SignatureVerificationException e) {
+            throw new InvalidEventException();
+        }
     }
 
     public String createCheckoutSession(SubscriptionType subscriptionType, UUID userId) {
-        Customer customer = getCustomer(userId);
+        Customer customer = getCustomer(userId, true);
         String priceId = subscriptionType.getValue();
 
         try {
@@ -77,12 +84,33 @@ public class StripeService {
         }
     }
 
-    private Customer getCustomer(UUID userId) {
+    public String createBillingPortalSession(UUID userId) {
+        Customer customer = getCustomer(userId, false);
+
+        try {
+            Configuration config = createBillingPortalConfig();
+            com.stripe.param.billingportal.SessionCreateParams params = com.stripe.param.billingportal.SessionCreateParams.builder()
+                    .setConfiguration(config.getId())
+                    .setCustomer(customer.getId())
+                    .setReturnUrl("https://lesson-link.co.uk")
+                    .build();
+            com.stripe.model.billingportal.Session session = com.stripe.model.billingportal.Session.create(params);
+
+            return session.getUrl();
+        } catch (StripeException e) {
+            throw new ATDException("Failed to create billing portal session.");
+        }
+    }
+
+    private Customer getCustomer(UUID userId, boolean createIfNotExists) {
         User user = userService.findById(userId);
         if (user == null) {
             throw new UserNotFoundException();
         } else if (user.getCustomerId() == null) {
-            return createCustomer(user);
+            if (createIfNotExists) {
+                return createCustomer(user);
+            }
+            throw new CustomerNotFoundException();
         }
 
         try {
@@ -112,6 +140,50 @@ public class StripeService {
         } catch (StripeException e) {
             throw new ATDException();
         }
+    }
+
+    private Configuration createBillingPortalConfig() {
+        ConfigurationCreateParams.Features.InvoiceHistory invoiceHistory = ConfigurationCreateParams.Features.InvoiceHistory.builder()
+                .setEnabled(true)
+                .build();
+        ConfigurationCreateParams.Features.SubscriptionCancel cancelSubscription = ConfigurationCreateParams.Features.SubscriptionCancel.builder()
+                .setEnabled(true)
+                .build();
+        ConfigurationCreateParams.Features.PaymentMethodUpdate paymentMethodUpdate = ConfigurationCreateParams.Features.PaymentMethodUpdate.builder()
+                .setEnabled(true)
+                .build();
+        ConfigurationCreateParams.Features.SubscriptionUpdate subscriptionUpdate = ConfigurationCreateParams.Features.SubscriptionUpdate.builder()
+                .setProducts(createProductList())
+                .setDefaultAllowedUpdates(List.of(ConfigurationCreateParams.Features.SubscriptionUpdate.DefaultAllowedUpdate.PRICE))
+                .setEnabled(true)
+                .build();
+        ConfigurationCreateParams.Features features = ConfigurationCreateParams.Features.builder()
+                .setInvoiceHistory(invoiceHistory)
+                .setSubscriptionCancel(cancelSubscription)
+                .setPaymentMethodUpdate(paymentMethodUpdate)
+                .setSubscriptionUpdate(subscriptionUpdate)
+                .build();
+
+        ConfigurationCreateParams params = ConfigurationCreateParams.builder().setFeatures(features).build();
+
+        try {
+            return Configuration.create(params);
+        } catch (StripeException e) {
+            throw new ATDException("Failed to create billing portal config.");
+        }
+    }
+
+    private List<Product> createProductList() {
+        List<Product> subscriptions = new ArrayList<>();
+        for (SubscriptionType subscriptionType : SubscriptionType.values()) {
+            Product product = Product.builder()
+                    .setProduct(SubscriptionType.getProductId(subscriptionType))
+                    .addPrice(subscriptionType.getValue())
+                    .build();
+            subscriptions.add(product);
+        }
+
+        return subscriptions;
     }
 
     public void handleEvent(Event event) {

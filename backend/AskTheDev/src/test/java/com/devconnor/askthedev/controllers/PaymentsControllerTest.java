@@ -1,6 +1,7 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.request.PaymentRequest;
+import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.security.SecurityConfig;
 import com.devconnor.askthedev.services.payments.StripeService;
@@ -53,25 +54,25 @@ class PaymentsControllerTest {
     @Mock
     private Event event;
 
+    private static final String URL = "https://askthedev.com";
     private static final String STRIPE_SIGNATURE = "stripeSignature";
     private static final String STRIPE_PAYLOAD = "{ \"type\": \"payment_intent.succeeded\", \"data\": {\"object\": {}} }";
 
     @Test
     @WithMockUser
     void testCreateCheckout() throws Exception {
-        String url = "https://askthedev.com";
         PaymentRequest paymentRequest = createPaymentRequest();
 
         String body = convertToJson(paymentRequest);
 
-        when(stripeService.createCheckoutSession(any(), eq(paymentRequest.getUserId()))).thenReturn(url);
+        when(stripeService.createCheckoutSession(any(), eq(paymentRequest.getUserId()))).thenReturn(URL);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/payment/create-checkout")
                         .contentType(APPLICATION_JSON)
                         .content(body)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.url").value(url));
+                .andExpect(jsonPath("$.url").value(URL));
     }
 
     @Test
@@ -114,6 +115,49 @@ class PaymentsControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/payment/event")
                         .contentType(APPLICATION_JSON)
                         .header("Stripe-Signature", STRIPE_SIGNATURE)
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    void testManageSubscription_Success() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        when(stripeService.createBillingPortalSession(userId)).thenReturn(URL);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/payment/manage-subscription")
+                        .queryParam("userId", userId.toString())
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testManageSubscription_NotLoggedIn() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/payment/manage-subscription")
+                        .queryParam("userId", userId.toString())
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
+    void testManageSubscription_MissingUserId() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/payment/manage-subscription"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    void testManageSubscription_UserNotFound() throws Exception {
+        UUID userId = UUID.randomUUID();
+
+        when(stripeService.createBillingPortalSession(userId)).thenThrow(UserNotFoundException.class);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/payment/manage-subscription")
+                        .queryParam("userId", userId.toString())
                 )
                 .andExpect(status().isBadRequest());
     }

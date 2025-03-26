@@ -2,17 +2,19 @@ package com.devconnor.askthedev.services.payments;
 
 import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
+import com.devconnor.askthedev.exception.InvalidEventException;
 import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.services.user.UserService;
 import com.devconnor.askthedev.utils.SubscriptionType;
-import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
+import com.stripe.model.billingportal.Configuration;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
+import com.stripe.param.billingportal.ConfigurationCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,8 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.UUID;
 
 import static com.devconnor.askthedev.utils.Utils.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -38,6 +39,8 @@ class StripeServiceTest {
     private static final String STRIPE_SIGNATURE = "stripeSignature";
     private static final String EVENT_PAYLOAD = "eventPayload";
     private static final String CHECKOUT_URL = "checkoutUrl";
+    private static final String BILLING_SESSION = "billingSession";
+    private static final String CONFIG_ID = "configId";
 
     private StripeService stripeService;
 
@@ -57,7 +60,13 @@ class StripeServiceTest {
     private Customer mockedCustomer;
 
     @Mock
-    private Session mockedSession;
+    private Session mockedCheckoutSession;
+    
+    @Mock
+    private com.stripe.model.billingportal.Session mockedBillingSession;
+
+    @Mock
+    private Configuration mockedConfiguration;
 
     private MockedStatic<Webhook> mockedStaticWebhook;
 
@@ -65,12 +74,18 @@ class StripeServiceTest {
 
     private MockedStatic<Session> mockedStaticSession;
 
+    private MockedStatic<com.stripe.model.billingportal.Session> mockedStaticBillingSession;
+
+    private MockedStatic<Configuration> mockedStaticConfiguration;
+
     @BeforeEach
     void setUp() {
         stripeService = new StripeService(userService, eventManager, userRepository);
         mockedStaticWebhook = mockStatic(Webhook.class);
         mockedStaticCustomer = mockStatic(Customer.class);
         mockedStaticSession = mockStatic(Session.class);
+        mockedStaticBillingSession = mockStatic(com.stripe.model.billingportal.Session.class);
+        mockedStaticConfiguration = mockStatic(Configuration.class);
     }
 
     @AfterEach
@@ -78,10 +93,12 @@ class StripeServiceTest {
         mockedStaticWebhook.close();
         mockedStaticCustomer.close();
         mockedStaticSession.close();
+        mockedStaticBillingSession.close();
+        mockedStaticConfiguration.close();
     }
 
     @Test
-    void testValidateAndRetrieveEvent_Successful() throws SignatureVerificationException {
+    void testValidateAndRetrieveEvent_Successful() {
         mockedStaticWebhook.when(() -> Webhook.constructEvent(eq(EVENT_PAYLOAD), eq(STRIPE_SIGNATURE), anyString())).thenReturn(mockedEvent);
 
         Event returnedEvent = stripeService.validateAndRetrieveEvent(STRIPE_SIGNATURE, EVENT_PAYLOAD);
@@ -91,9 +108,9 @@ class StripeServiceTest {
 
     @Test
     void testValidateAndRetrieveEvent_ThrowsException() {
-        mockedStaticWebhook.when(() -> Webhook.constructEvent(eq(EVENT_PAYLOAD), eq(STRIPE_SIGNATURE), anyString())).thenThrow(SignatureVerificationException.class);
+        mockedStaticWebhook.when(() -> Webhook.constructEvent(eq(EVENT_PAYLOAD), eq(STRIPE_SIGNATURE), anyString())).thenThrow(InvalidEventException.class);
 
-        assertThrows(SignatureVerificationException.class, () -> stripeService.validateAndRetrieveEvent(STRIPE_SIGNATURE, EVENT_PAYLOAD));
+        assertThrows(InvalidEventException.class, () -> stripeService.validateAndRetrieveEvent(STRIPE_SIGNATURE, EVENT_PAYLOAD));
     }
 
     @Test
@@ -104,8 +121,8 @@ class StripeServiceTest {
         when(userService.findById(userId)).thenReturn(user);
         mockedStaticCustomer.when(() -> Customer.retrieve(eq(CUSTOMER_ID))).thenReturn(mockedCustomer);
         when(mockedCustomer.getId()).thenReturn(CUSTOMER_ID);
-        mockedStaticSession.when(() -> Session.create(any(SessionCreateParams.class))).thenReturn(mockedSession);
-        when(mockedSession.getUrl()).thenReturn(CHECKOUT_URL);
+        mockedStaticSession.when(() -> Session.create(any(SessionCreateParams.class))).thenReturn(mockedCheckoutSession);
+        when(mockedCheckoutSession.getUrl()).thenReturn(CHECKOUT_URL);
 
         String url = stripeService.createCheckoutSession(SubscriptionType.BASIC, userId);
 
@@ -121,8 +138,8 @@ class StripeServiceTest {
         when(userService.findById(userId)).thenReturn(user);
         mockedStaticCustomer.when(() -> Customer.create(any(CustomerCreateParams.class))).thenReturn(mockedCustomer);
         when(mockedCustomer.getId()).thenReturn(CUSTOMER_ID);
-        mockedStaticSession.when(() -> Session.create(any(SessionCreateParams.class))).thenReturn(mockedSession);
-        when(mockedSession.getUrl()).thenReturn(CHECKOUT_URL);
+        mockedStaticSession.when(() -> Session.create(any(SessionCreateParams.class))).thenReturn(mockedCheckoutSession);
+        when(mockedCheckoutSession.getUrl()).thenReturn(CHECKOUT_URL);
 
         String url = stripeService.createCheckoutSession(SubscriptionType.BASIC, userId);
 
@@ -173,5 +190,73 @@ class StripeServiceTest {
         mockedStaticSession.when(() -> Session.create(any(SessionCreateParams.class))).thenThrow(ATDException.class);
 
         assertThrows(ATDException.class, () -> stripeService.createCheckoutSession(SubscriptionType.BASIC, userId));
+    }
+
+    @Test
+    void testCreateBillingPortalSession_Successful() {
+        UUID userId = UUID.randomUUID();
+        User user = createUser(userId);
+
+        when(userService.findById(userId)).thenReturn(user);
+        mockedStaticCustomer.when(() -> Customer.retrieve(CUSTOMER_ID)).thenReturn(mockedCustomer);
+        when(mockedCustomer.getId()).thenReturn(CUSTOMER_ID);
+        mockedStaticConfiguration.when(() -> Configuration.create(any(ConfigurationCreateParams.class))).thenReturn(mockedConfiguration);
+        when(mockedConfiguration.getId()).thenReturn(CONFIG_ID);
+        mockedStaticBillingSession.when(
+                () -> com.stripe.model.billingportal.Session.create(any(com.stripe.param.billingportal.SessionCreateParams.class))
+        ).thenReturn(mockedBillingSession);
+        when(mockedBillingSession.getUrl()).thenReturn(BILLING_SESSION);
+
+        String responseUrl = stripeService.createBillingPortalSession(userId);
+
+        assertNotNull(responseUrl);
+    }
+
+    @Test
+    void testCreateBillingPortalSession_UserNotFound() {
+        UUID userId = UUID.randomUUID();
+
+        when(userService.findById(userId)).thenReturn(null);
+
+        assertThrows(UserNotFoundException.class, () -> stripeService.createBillingPortalSession(userId));
+    }
+
+    @Test
+    void testCreateBillingPortalSession_MissingCustomerId() {
+        UUID userId = UUID.randomUUID();
+        User user = createUser(userId);
+        user.setCustomerId(null);
+
+        when(userService.findById(userId)).thenReturn(user);
+
+        assertThrows(CustomerNotFoundException.class, () -> stripeService.createBillingPortalSession(userId));
+    }
+
+    @Test
+    void testCreateBillingPortalSession_CustomerNotFound() {
+        UUID userId = UUID.randomUUID();
+        User user = createUser(userId);
+
+        when(userService.findById(userId)).thenReturn(user);
+        mockedStaticCustomer.when(() -> Customer.retrieve(CUSTOMER_ID)).thenThrow(CustomerNotFoundException.class);
+
+        assertThrows(CustomerNotFoundException.class, () -> stripeService.createBillingPortalSession(userId));
+    }
+
+    @Test
+    void testCreateBillingPortalSession_ThrowsStripeException() {
+        UUID userId = UUID.randomUUID();
+        User user = createUser(userId);
+
+        when(userService.findById(userId)).thenReturn(user);
+        mockedStaticCustomer.when(() -> Customer.retrieve(CUSTOMER_ID)).thenReturn(mockedCustomer);
+        when(mockedCustomer.getId()).thenReturn(CUSTOMER_ID);
+        mockedStaticConfiguration.when(() -> Configuration.create(any(ConfigurationCreateParams.class))).thenReturn(mockedConfiguration);
+        when(mockedConfiguration.getId()).thenReturn(CONFIG_ID);
+        mockedStaticBillingSession.when(
+                () -> com.stripe.model.billingportal.Session.create(any(com.stripe.param.billingportal.SessionCreateParams.class))
+        ).thenThrow(ATDException.class);
+
+        assertThrows(ATDException.class, () -> stripeService.createBillingPortalSession(userId));
     }
 }

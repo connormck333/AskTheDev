@@ -22,6 +22,13 @@ public enum SubscriptionType {
         throw new SubscriptionNotFoundException();
     }
 
+    public static String getProductId(SubscriptionType subscriptionType) {
+        return switch (subscriptionType) {
+            case BASIC -> "prod_RwZzeVUoP7d3ke";
+            case PRO -> "prod_RzT2e6PEV9vQgs";
+        };
+    }
+
     public static int getPromptAmount(SubscriptionType subscriptionType) {
         return switch (subscriptionType) {
             case BASIC -> 15;

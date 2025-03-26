@@ -1,8 +1,9 @@
 import { JSX, ReactElement, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, LogOut, Settings, HelpCircle } from 'lucide-react';
+import { User, LogOut, Settings2, HelpCircle } from 'lucide-react';
 import { Status } from '../utils/interfaces';
 import { logout } from '../methods/userManagement/logout';
+import { createManageSubscriptionSession } from '../methods/payments/createManageSubscriptionSession';
 
 type MenuItem = {
     name: string;
@@ -11,19 +12,19 @@ type MenuItem = {
 };
 
 interface FloatingButtonProps {
+    userId: string;
     setSignedIn: Function;
 };
 
 export default function FloatingAccountButton(props: FloatingButtonProps): ReactElement {
 
-    const { setSignedIn } = props;
+    const { userId, setSignedIn } = props;
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
     const toggleMenu = (): void => setIsMenuOpen(prev => !prev);
 
     const menuItems: MenuItem[] = [
-        { name: 'Profile', id: 'profile', icon: <User size={18} /> },
-        { name: 'Settings', id: 'settings', icon: <Settings size={18} /> },
+        { name: 'Subscription', id: 'subscription', icon: <Settings2 size={18} /> },
         { name: 'Help', id: 'help', icon: <HelpCircle size={18} /> },
         { name: 'Logout', id: 'logout', icon: <LogOut size={18} /> }
     ];
@@ -32,6 +33,9 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
         switch (id) {
             case "logout": 
                 logoutUser();
+                break;
+            case "subscription":
+                createManageSubscriptionUrl();
                 break;
         }
     }
@@ -44,6 +48,21 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
         }
 
         setSignedIn(false);
+    }
+
+    async function createManageSubscriptionUrl(): Promise<void> {
+        const response: Status = await createManageSubscriptionSession(userId);
+        if (!response.success) {
+            alert("There was an error creating subscription management url. If this issue continues, please contact us.");
+            return;
+        }
+
+        openManageSubscriptionPage(response.data.url);
+    }
+
+    function openManageSubscriptionPage(url: string): void {
+        console.log(url);
+        window.open(url);
     }
 
     return (

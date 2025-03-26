@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 @Getter
 @AllArgsConstructor
-public class CheckoutSession {
+public class ResponseUrl {
     private String url;
 }
