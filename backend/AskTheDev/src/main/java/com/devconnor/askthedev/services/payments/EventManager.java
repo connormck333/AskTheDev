@@ -14,6 +14,7 @@ import com.devconnor.askthedev.services.user.UserService;
 import com.devconnor.askthedev.utils.SubscriptionType;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -70,6 +71,7 @@ public class EventManager {
         subscriptionRepository.save(atdSubscription);
     }
 
+    @Transactional
     public void handleSubscriptionDeleted(Event event) {
         Subscription subscription = deserializeEvent(event, Subscription.class);
         String subscriptionId = subscription.getId();

@@ -20,7 +20,6 @@ import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.billingportal.ConfigurationCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
-import com.stripe.param.common.EmptyParam;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.stereotype.Service;
 
@@ -148,6 +147,7 @@ public class StripeService {
                 .build();
         ConfigurationCreateParams.Features.SubscriptionCancel cancelSubscription = ConfigurationCreateParams.Features.SubscriptionCancel.builder()
                 .setEnabled(true)
+                .setMode(ConfigurationCreateParams.Features.SubscriptionCancel.Mode.IMMEDIATELY)
                 .build();
         ConfigurationCreateParams.Features.PaymentMethodUpdate paymentMethodUpdate = ConfigurationCreateParams.Features.PaymentMethodUpdate.builder()
                 .setEnabled(true)
