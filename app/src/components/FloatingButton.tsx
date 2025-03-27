@@ -4,6 +4,7 @@ import { User, LogOut, Settings2, HelpCircle } from 'lucide-react';
 import { Status } from '../utils/interfaces';
 import { logout } from '../methods/userManagement/logout';
 import { createManageSubscriptionSession } from '../methods/payments/createManageSubscriptionSession';
+import Spinner from './Spinner';
 
 type MenuItem = {
     name: string;
@@ -20,6 +21,7 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
 
     const { userId, setSignedIn } = props;
     const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
+    const [loading, setLoading] = useState<string | undefined>(undefined);
 
     const toggleMenu = (): void => setIsMenuOpen(prev => !prev);
 
@@ -41,7 +43,12 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
     }
 
     async function logoutUser(): Promise<void> {
+        setLoading("logout");
+
         const response: Status = await logout();
+
+        setLoading(undefined);
+
         if (!response.success) {
             alert("There was an error logging you out. Please try again later.");
             return;
@@ -51,7 +58,12 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
     }
 
     async function createManageSubscriptionUrl(): Promise<void> {
+        setLoading("subscription")
+
         const response: Status = await createManageSubscriptionSession(userId);
+
+        setLoading(undefined);
+
         if (!response.success) {
             alert("There was an error creating subscription management url. If this issue continues, please contact us.");
             return;
@@ -61,7 +73,6 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
     }
 
     function openManageSubscriptionPage(url: string): void {
-        console.log(url);
         window.open(url);
     }
 
@@ -90,7 +101,7 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
                                 className="flex items-center w-full p-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg"
                             >
                                 { item.icon }
-                                <span className="ml-2">{ item.name }</span>
+                                <span className="ml-2">{ loading === item.id ? <Spinner /> : item.name }</span>
                             </button>
                         ))}
                     </motion.div>

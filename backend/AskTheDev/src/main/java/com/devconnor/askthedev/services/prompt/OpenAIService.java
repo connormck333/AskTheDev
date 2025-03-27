@@ -53,14 +53,12 @@ public class OpenAIService {
                 .model(MODEL_NAME)
                 .build();
 
-        ChatCompletion chatCompletion;
         try {
-            chatCompletion = openAIClient.chat().completions().create(params);
+            ChatCompletion chatCompletion = openAIClient.chat().completions().create(params);
+            return getResponse(chatCompletion.choices());
         } catch (Exception e) {
             throw new InvalidPromptException();
         }
-
-        return getResponse(chatCompletion.choices());
     }
 
     public String summariseWebPage(String pageContent) {

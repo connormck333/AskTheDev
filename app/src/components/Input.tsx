@@ -1,10 +1,11 @@
-import { ChangeEvent, Dispatch, ReactElement, SetStateAction } from "react";
-import { Chat, Status, User } from "../utils/interfaces";
+import { ChangeEvent, Dispatch, ReactElement, SetStateAction, useContext, useEffect } from "react";
+import { Chat, ScrollContainer, Status, User } from "../utils/interfaces";
 import { sendQuestionToOpenAI } from "../methods/prompts/sendQuestionToOpenAI";
 import UserType from "../utils/UserType";
 import Button from "./Button";
 import SubscriptionType from "../utils/SubscriptionType";
 import { summariseWebPage } from "../methods/prompts/summariseWebPage";
+import ScrollContainerContext from "../context/scrollContainerContext";
 
 interface InputProps {
     user: User,
@@ -19,6 +20,18 @@ export default function Input(props: InputProps): ReactElement {
     const [chatStream, setChatStream] = props.chatStream;
     const [prompt, setPrompt] =  props.prompt;
     const [loading, setLoading] = props.loading;
+    const scrollContainer = useContext<ScrollContainer | null>(ScrollContainerContext);
+
+    useEffect(() => {
+        (() => {
+            if (chatStream[chatStream.length - 1].userType === UserType.Client) {
+                console.log("chat streaming");
+                if (scrollContainer?.current) {
+                    scrollContainer.current.scrollTop = scrollContainer.current.scrollHeight;                    
+                }
+            }
+        })();
+    }, [chatStream]);
 
     async function submitPrompt(): Promise<void> {
         if (loading) return;

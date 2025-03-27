@@ -67,28 +67,29 @@ Please ask me anything, I am already caught up with your current webpage!
 
     return (
         <div className="p-[2rem] pb-0">
-            <div
-                ref={scrollContainer}
-                className="overflow-scroll scrollbar-hidden flex flex-col items-center h-[70vh] w-[32rem]"
+            <ScrollContainerContext.Provider
+                value={scrollContainer}
             >
-                <ScrollContainerContext.Provider
-                    value={scrollContainer}
+                <div
+                    ref={scrollContainer}
+                    className="overflow-scroll scrollbar-hidden flex flex-col items-center h-[70vh] w-[32rem]"
                 >
-                    <Logo />
-                    <ChatStream
-                        stream={[chatStream, setChatStream]}
-                        loading={loading}
+                    
+                        <Logo />
+                        <ChatStream
+                            stream={[chatStream, setChatStream]}
+                            loading={loading}
+                        />
+                </div>
+                <>
+                    <Input
+                        user={user}
+                        prompt={[prompt, setPrompt]}
+                        loading={[loading, setLoading]}
+                        chatStream={[chatStream, setChatStream]}
                     />
-                </ScrollContainerContext.Provider>
-            </div>
-            <>
-                <Input
-                    user={user}
-                    prompt={[prompt, setPrompt]}
-                    loading={[loading, setLoading]}
-                    chatStream={[chatStream, setChatStream]}
-                />
-            </>
+                </>
+            </ScrollContainerContext.Provider>
             <FloatingAccountButton
                 userId={user.userId}
                 setSignedIn={setSignedIn}

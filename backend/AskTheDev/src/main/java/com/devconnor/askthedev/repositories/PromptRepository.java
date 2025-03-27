@@ -14,7 +14,7 @@ public interface PromptRepository extends JpaRepository<Prompt, Long> {
     @Query(value = """
         SELECT * FROM prompts
         WHERE web_url = :webUrl AND user_id = :userId
-        ORDER BY created_at DESC
+        ORDER BY created_at ASC
         LIMIT :limit OFFSET :offset
     """, nativeQuery = true)
     List<Prompt> findLatestPrompts(

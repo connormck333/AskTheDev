@@ -50,6 +50,7 @@ public class PromptService {
         }
 
         validateUserSubscription(prompt.getUserId(), true);
+        prompt.setUserPrompt("Summarise this web page.");
 
         prompt.setOpenAIResponse(
                 openAIService.summariseWebPage(prompt.getPageContent())
