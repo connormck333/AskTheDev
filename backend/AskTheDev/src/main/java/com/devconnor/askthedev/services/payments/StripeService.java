@@ -7,6 +7,7 @@ import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.services.user.UserService;
+import com.devconnor.askthedev.utils.EnvUtils;
 import com.devconnor.askthedev.utils.SubscriptionType;
 import com.stripe.Stripe;
 import com.stripe.exception.SignatureVerificationException;
@@ -20,7 +21,6 @@ import com.stripe.net.Webhook;
 import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.billingportal.ConfigurationCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -44,9 +44,8 @@ public class StripeService {
         this.userService = userService;
         this.eventManager = eventManager;
 
-        Dotenv dotenv = Dotenv.configure().load();
-        Stripe.apiKey = dotenv.get("STRIPE_API_KEY");
-        this.stripeEndpointSecret = dotenv.get("STRIPE_ENDPOINT_SECRET");
+        Stripe.apiKey = EnvUtils.loadString("STRIPE_API_KEY");
+        this.stripeEndpointSecret = EnvUtils.loadString("STRIPE_ENDPOINT_SECRET");
         this.userRepository = userRepository;
     }
 

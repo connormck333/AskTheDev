@@ -1,10 +1,10 @@
 package com.devconnor.askthedev.services.prompt;
 
 import com.devconnor.askthedev.exception.InvalidPromptException;
+import com.devconnor.askthedev.utils.EnvUtils;
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
 import com.openai.models.*;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,8 +21,7 @@ public class OpenAIService {
     }
 
     public OpenAIService() {
-        Dotenv dotenv = Dotenv.configure().load();
-        String apiKey = dotenv.get("OPENAI_API_KEY");
+        String apiKey = EnvUtils.loadString("OPENAI_API_KEY");
         openAIClient = OpenAIOkHttpClient.builder()
                 .apiKey(apiKey)
                 .build();
