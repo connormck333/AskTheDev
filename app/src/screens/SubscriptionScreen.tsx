@@ -10,10 +10,12 @@ const tiers = [
         name: 'Basic',
         id: 'BASIC',
         priceMonthly: '£3.99',
-        description: "The perfect plan if you're just getting started with our product.",
+        description: "Access essential features to enhance your development workflow.",
         features: [
             "15 prompts /day",
-            "Access to GPT-4o mini"
+            "Access to GPT-4o mini",
+            "Save previous responses",
+            "Use on any site"
         ],
         featured: false
     },
@@ -21,13 +23,15 @@ const tiers = [
         name: 'Pro',
         id: 'PRO',
         priceMonthly: '£9.99',
-        description: 'Dedicated support and infrastructure for your company.',
+        description: 'Unlock more prompts and advanced features for a more powerful and flexible experience.',
         features: [
             "50 prompts /day",
             "Web page summaries",
-            "Access to GPT-4o mini",
             "Access to GPT-4o",
-            "Access to OpenAI o3-mini (Best for coding, math and science)"
+            "Access to GPT-4o mini",
+            "Access to OpenAI o3-mini (Best for coding, math and science)",
+            "Save previous responses",
+            "Use on any site"
         ],
         featured: true,
     },
