@@ -32,7 +32,6 @@ import static com.devconnor.askthedev.utils.Utils.convertToJson;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -80,7 +79,6 @@ class PromptControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/%s", userId))
                         .contentType(APPLICATION_JSON)
                         .content(body)
-                        .with(csrf())
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.prompt.userPrompt").value(prompt.getUserPrompt()))
@@ -102,7 +100,6 @@ class PromptControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/%s", userId))
                         .contentType(APPLICATION_JSON)
                         .content(body)
-                        .with(csrf())
                 )
                 .andExpect(status().is(403));
     }
@@ -114,7 +111,6 @@ class PromptControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/%s", userId))
                         .contentType(APPLICATION_JSON)
-                        .with(csrf())
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -133,7 +129,6 @@ class PromptControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/summarise/%s", userId))
                         .contentType(APPLICATION_JSON)
                         .content(body)
-                        .with(csrf())
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.prompt.pageContent").value(prompt.getPageContent()))
@@ -154,7 +149,6 @@ class PromptControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/summarise/%s", userId))
                         .contentType(APPLICATION_JSON)
                         .content(body)
-                        .with(csrf())
                 )
                 .andExpect(status().is(403));
     }
@@ -166,7 +160,6 @@ class PromptControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/summarise/%s", userId))
                         .contentType(APPLICATION_JSON)
-                        .with(csrf())
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -185,7 +178,6 @@ class PromptControllerTest {
                         .queryParam(USER_ID_PARAM, userId.toString())
                         .queryParam(WEB_URL_PARAM, WEB_URL)
                         .queryParam(MIN_PAGE_PARAM, "1")
-                        .with(csrf())
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value(response.getMessage()))
@@ -199,7 +191,6 @@ class PromptControllerTest {
                         .queryParam(USER_ID_PARAM, userId.toString())
                         .queryParam(WEB_URL_PARAM, WEB_URL)
                         .queryParam(MIN_PAGE_PARAM, "1")
-                        .with(csrf())
                 )
                 .andExpect(status().is(403));
     }
@@ -210,7 +201,6 @@ class PromptControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/prompt/retrieve")
                         .queryParam(WEB_URL_PARAM, WEB_URL)
                         .queryParam(MIN_PAGE_PARAM, "1")
-                        .with(csrf())
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -223,7 +213,6 @@ class PromptControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/prompt/retrieve")
                         .queryParam(USER_ID_PARAM, userId.toString())
                         .queryParam(MIN_PAGE_PARAM, "1")
-                        .with(csrf())
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -236,7 +225,6 @@ class PromptControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/prompt/retrieve")
                         .queryParam(USER_ID_PARAM, userId.toString())
                         .queryParam(WEB_URL_PARAM, WEB_URL)
-                        .with(csrf())
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -250,7 +238,6 @@ class PromptControllerTest {
                         .queryParam(USER_ID_PARAM, userId.toString())
                         .queryParam(WEB_URL_PARAM, WEB_URL)
                         .queryParam(MIN_PAGE_PARAM, "invalid")
-                        .with(csrf())
                 )
                 .andExpect(status().isBadRequest());
     }

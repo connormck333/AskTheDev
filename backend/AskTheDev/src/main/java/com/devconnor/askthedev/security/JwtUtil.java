@@ -18,7 +18,6 @@ import java.security.Key;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
-import java.util.UUID;
 
 import static com.devconnor.askthedev.utils.Constants.COOKIE_EXPIRATION_TIME;
 
@@ -26,6 +25,7 @@ import static com.devconnor.askthedev.utils.Constants.COOKIE_EXPIRATION_TIME;
 public class JwtUtil {
 
     private static final String JWT_SECRET_KEY = "JWT_SECRET_KEY";
+    private static final String JWT_TOKEN = "jwtToken";
 
     private final Key jwtSecret;
     private final JwtParser jwtParser;
@@ -64,18 +64,10 @@ public class JwtUtil {
 
         try {
             return userEmail.equalsIgnoreCase(extractUserEmail(jwtToken))
-                    && !isTokenExpired(jwtToken)
-                    && isCSRFTokenValid(request);
+                    && !isTokenExpired(jwtToken);
         } catch (Exception e) {
             return false;
         }
-    }
-
-    private boolean isCSRFTokenValid(HttpServletRequest request) {
-        String csrfCookie = getCSRFTokenFromCookie(request);
-        String csrfToken = request.getHeader("X-CSRF-TOKEN");
-
-        return csrfCookie != null && csrfCookie.equals(csrfToken);
     }
 
     private boolean isTokenExpired(String token) {
@@ -87,7 +79,7 @@ public class JwtUtil {
         saveRefreshToken(jwtToken);
 
         // Save JWT Token
-        ResponseCookie jwtCookie = ResponseCookie.from("token", jwtToken)
+        ResponseCookie jwtCookie = ResponseCookie.from(JWT_TOKEN, jwtToken)
                 .httpOnly(true)
                 .secure(true)
                 .sameSite("Strict")
@@ -95,16 +87,6 @@ public class JwtUtil {
                 .maxAge(COOKIE_EXPIRATION_TIME)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
-
-        // Save CSRF Token
-        String csrfToken = UUID.randomUUID().toString();
-        ResponseCookie csrfCookie = ResponseCookie.from("csrfToken", csrfToken)
-                .httpOnly(false)
-                .secure(true)
-                .sameSite("Strict")
-                .path("/")
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, csrfCookie.toString());
     }
 
     public String getTokenFromCookie(HttpServletRequest request) {
@@ -112,13 +94,7 @@ public class JwtUtil {
             return null;
         }
 
-        return getCookieValue(request, "token");
-    }
-
-    public String getCSRFTokenFromCookie(HttpServletRequest request) {
-        if (request.getCookies() == null) return null;
-
-        return getCookieValue(request, "csrfToken");
+        return getCookieValue(request, JWT_TOKEN);
     }
 
     private String getCookieValue(HttpServletRequest request, String cookieName) {

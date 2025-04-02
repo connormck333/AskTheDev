@@ -23,7 +23,6 @@ import java.util.UUID;
 
 import static com.devconnor.askthedev.utils.Utils.APPLICATION_JSON;
 import static com.devconnor.askthedev.utils.Utils.convertToJson;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -59,7 +58,6 @@ class SecurityFilterChainTest {
         mockMvc.perform(MockMvcRequestBuilders.post(endpoint)
                         .contentType(APPLICATION_JSON)
                         .content(body)
-                        .with(csrf())
                 )
                 .andExpect(status().isOk());
     }
@@ -73,29 +71,12 @@ class SecurityFilterChainTest {
                         .header("Stripe-Signature", signature)
                         .contentType(APPLICATION_JSON)
                         .content(payload)
-                        .with(csrf())
                 )
                 .andExpect(status().isOk());
     }
 
     @Test
     void testPrivateAccessEndpoint() throws Exception {
-        PaymentRequest paymentRequest = new PaymentRequest();
-        paymentRequest.setUserId(UUID.randomUUID());
-        paymentRequest.setSubscriptionType(SubscriptionType.BASIC);
-
-        String body = convertToJson(paymentRequest);
-
-        mockMvc.perform(MockMvcRequestBuilders.post("/payment/create-checkout")
-                        .contentType(APPLICATION_JSON)
-                        .content(body)
-                        .with(csrf())
-                )
-                .andExpect(status().is(403));
-    }
-
-    @Test
-    void testCSRFEnabledEndpoint_WithCSRFDisabled() throws Exception {
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setUserId(UUID.randomUUID());
         paymentRequest.setSubscriptionType(SubscriptionType.BASIC);
