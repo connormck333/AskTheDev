@@ -2,12 +2,15 @@ package com.devconnor.askthedev.security;
 
 import com.devconnor.askthedev.models.RefreshToken;
 import com.devconnor.askthedev.repositories.RefreshTokenRepository;
+import com.devconnor.askthedev.utils.EnvUtils;
+import com.devconnor.askthedev.utils.EnvironmentType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +44,11 @@ class JwtUtilTest {
     private HttpServletResponse response;
 
     private static final String TEST_EMAIL = "test@gmail.com";
+
+    @BeforeAll
+    static void setup() {
+        EnvUtils.loadDotEnv(EnvironmentType.LOCAL);
+    }
 
     @BeforeEach
     void setUp() {

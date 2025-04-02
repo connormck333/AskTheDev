@@ -1,7 +1,6 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
-import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.UserDTO;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.security.JwtUtil;
@@ -24,8 +23,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.UUID;
 
-import static com.devconnor.askthedev.utils.Utils.APPLICATION_JSON;
-import static com.devconnor.askthedev.utils.Utils.generateUserResponse;
+import static com.devconnor.askthedev.utils.Utils.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -56,7 +54,7 @@ class UserControllerTest {
     @WithMockUser
     void testGetUserById_Successful() throws Exception {
         UUID userId = UUID.randomUUID();
-        UserDTO user = createUser(userId);
+        UserDTO user = createUserDTO(userId);
 
         when(jwtUtil.isSessionValid(any(HttpServletRequest.class), eq(user.getEmail()))).thenReturn(true);
         when(userService.getUserById(any(UUID.class))).thenReturn(user);
@@ -85,7 +83,7 @@ class UserControllerTest {
     @WithMockUser
     void testGetUserById_Unauthorized() throws Exception {
         UUID userId = UUID.randomUUID();
-        UserDTO user = createUser(UUID.randomUUID());
+        UserDTO user = createUserDTO(UUID.randomUUID());
 
         when(jwtUtil.isSessionValid(any(HttpServletRequest.class), eq(user.getEmail()))).thenReturn(false);
         when(userService.getUserById(any(UUID.class))).thenReturn(user);
@@ -127,7 +125,7 @@ class UserControllerTest {
     void testGetCurrentUser_Successful_ActiveSubscription() throws Exception {
         String token = "sessionToken";
         UUID userId = UUID.randomUUID();
-        UserDTO user = createUser(userId);
+        UserDTO user = createUserDTO(userId);
         ATDUserResponse atdUserResponse = generateUserResponse(userId);
         atdUserResponse.setActiveSubscription(true);
         atdUserResponse.setSubscriptionType(SubscriptionType.BASIC);
@@ -152,7 +150,7 @@ class UserControllerTest {
     void testGetCurrentUser_Successful_NoSubscriptionFound() throws Exception {
         String token = "sessionToken";
         UUID userId = UUID.randomUUID();
-        UserDTO user = createUser(userId);
+        UserDTO user = createUserDTO(userId);
         ATDUserResponse atdUserResponse = generateUserResponse(userId);
 
         when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
@@ -175,7 +173,7 @@ class UserControllerTest {
     void testGetCurrentUser_Successful_InactiveSubscription() throws Exception {
         String token = "sessionToken";
         UUID userId = UUID.randomUUID();
-        UserDTO user = createUser(userId);
+        UserDTO user = createUserDTO(userId);
         ATDUserResponse atdUserResponse = generateUserResponse(userId);
         atdUserResponse.setSubscriptionType(SubscriptionType.BASIC);
 
@@ -207,7 +205,7 @@ class UserControllerTest {
     void testGetCurrentUser_UserNotFound() throws Exception {
         String token = "sessionToken";
         UUID userId = UUID.randomUUID();
-        UserDTO user = createUser(userId);
+        UserDTO user = createUserDTO(userId);
 
         when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
         when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
@@ -218,22 +216,5 @@ class UserControllerTest {
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("User Not Found"));
-    }
-
-    private static UserDTO createUser(UUID userId) {
-        UserDTO user = new UserDTO();
-        user.setId(userId);
-        user.setCustomerId("customerId");
-        user.setEmail("email");
-
-        return user;
-    }
-
-    private static ATDSubscription createActiveSubscription() {
-        ATDSubscription subscription = new ATDSubscription();
-        subscription.setActive(true);
-        subscription.setType(SubscriptionType.BASIC);
-
-        return subscription;
     }
 }

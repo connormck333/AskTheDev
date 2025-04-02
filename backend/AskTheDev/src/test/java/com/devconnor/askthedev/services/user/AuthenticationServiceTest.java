@@ -130,6 +130,24 @@ class AuthenticationServiceTest {
     }
 
     @Test
+    void testRegister_InvalidEmail() {
+        String email = "invalidEmail";
+
+        when(userRepository.existsUserByEmail(email)).thenReturn(false);
+
+        assertThrows(BadCredentialsException.class, () -> authenticationService.register(response, email, PASSWORD));
+    }
+
+    @Test
+    void testRegister_InvalidPassword() {
+        String password = "invalidPassword";
+
+        when(userRepository.existsUserByEmail(EMAIL)).thenReturn(false);
+
+        assertThrows(BadCredentialsException.class, () -> authenticationService.register(response, EMAIL, password));
+    }
+
+    @Test
     void testRegister_ExistingUsername() {
         when(userRepository.existsUserByEmail(EMAIL)).thenReturn(true);
 

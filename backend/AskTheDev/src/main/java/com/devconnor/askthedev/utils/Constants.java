@@ -2,6 +2,8 @@ package com.devconnor.askthedev.utils;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.List;
+
 @UtilityClass
 public class Constants {
     public static final int MINIMUM_PROMPT_LENGTH = 5;
@@ -16,4 +18,5 @@ public class Constants {
 
     public static final long COOKIE_EXPIRATION_TIME = (long) 1000 * 60 * 60 * 24 * 7;
 
+    public static final List<Character> SPECIAL_CHARACTERS = List.of('!', '@', '£', '#', '$', '%', '^', '&', '*', '-');
 }

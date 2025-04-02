@@ -23,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 
+import static com.devconnor.askthedev.utils.Constants.SPECIAL_CHARACTERS;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -52,6 +54,10 @@ public class AuthenticationService {
     public ATDUserResponse register(HttpServletResponse response, String email, String password) {
         if (userRepository.existsUserByEmail(email)) {
             throw new ExistingUsernameException();
+        }
+
+        if (!isValidEmail(email) || !isValidPassword(password)) {
+            throw new BadCredentialsException("Your email or password does not fit the requirements.");
         }
 
         User user = new User();
@@ -91,5 +97,26 @@ public class AuthenticationService {
         } else {
             throw new UserNotFoundException();
         }
+    }
+
+    private boolean isValidEmail(String email) {
+        return email != null
+                && email.contains("@")
+                && email.contains(".")
+                && email.length() >= 5;
+    }
+
+    private boolean isValidPassword(String password) {
+        if (password == null) return false;
+
+        boolean containsSpecialChar = false;
+        for (char c : password.toCharArray()) {
+            if (SPECIAL_CHARACTERS.contains(c)) {
+                containsSpecialChar = true;
+                break;
+            }
+        }
+
+        return containsSpecialChar && password.length() >= 8;
     }
 }

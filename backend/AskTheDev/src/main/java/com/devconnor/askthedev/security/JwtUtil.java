@@ -2,6 +2,7 @@ package com.devconnor.askthedev.security;
 
 import com.devconnor.askthedev.models.RefreshToken;
 import com.devconnor.askthedev.repositories.RefreshTokenRepository;
+import com.devconnor.askthedev.utils.EnvUtils;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
@@ -23,13 +25,16 @@ import static com.devconnor.askthedev.utils.Constants.COOKIE_EXPIRATION_TIME;
 @Service
 public class JwtUtil {
 
-    private static final Key JWT_SECRET = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private static final String JWT_SECRET_KEY = "JWT_SECRET_KEY";
 
+    private final Key jwtSecret;
     private final JwtParser jwtParser;
     private final RefreshTokenRepository refreshTokenRepository;
 
     public JwtUtil(RefreshTokenRepository refreshTokenRepository) {
-        jwtParser = Jwts.parserBuilder().setSigningKey(JWT_SECRET).build();
+        byte[] keyBytes = Base64.getDecoder().decode(EnvUtils.loadString(JWT_SECRET_KEY));
+        jwtSecret = Keys.hmacShaKeyFor(keyBytes);
+        jwtParser = Jwts.parserBuilder().setSigningKey(jwtSecret).build();
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
@@ -42,7 +47,7 @@ public class JwtUtil {
                 .setSubject(userEmail)
                 .setIssuedAt(issuedAt)
                 .setExpiration(new Date(issuedAt.getTime() + COOKIE_EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS256, JWT_SECRET)
+                .signWith(SignatureAlgorithm.HS256, jwtSecret)
                 .compact();
     }
 
@@ -133,6 +138,6 @@ public class JwtUtil {
     }
 
     public Key getSecret() {
-        return JWT_SECRET;
+        return jwtSecret;
     }
 }

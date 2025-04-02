@@ -18,8 +18,8 @@ public class Utils {
     public static final String APPLICATION_JSON = "application/json";
     public static final String SUBSCRIPTION_ID = "subscriptionId";
     public static final String CUSTOMER_ID = "customerId";
-    public static final String EMAIL = "email";
-    public static final String PASSWORD = "password";
+    public static final String EMAIL = "email@askthedev.com";
+    public static final String PASSWORD = "password!123";
     public static final String EVENT_ID = "eventId";
     public static final String EVENT_JSON = "eventJson";
     public static final String ACTIVE = "active";
