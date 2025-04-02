@@ -27,6 +27,7 @@ import java.util.UUID;
 import static com.devconnor.askthedev.utils.Utils.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
@@ -70,6 +71,7 @@ class AuthenticationControllerTest {
     void testLogin_WithValidEmailAndPassword() throws Exception {
         UUID userId = UUID.randomUUID();
         ATDUserResponse userResponse = generateUserResponse(userId);
+
         when(authenticationService.login(any(HttpServletResponse.class), eq(EMAIL), eq(PASSWORD))).thenReturn(userResponse);
 
         String userAuthRequest = generateUserAuthRequest();
@@ -86,7 +88,9 @@ class AuthenticationControllerTest {
     void testLogout_Successful_WhenLoggedIn() throws Exception {
         doNothing().when(authenticationService).logout(any(HttpServletRequest.class), any(HttpServletResponse.class));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/auth/logout"))
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/logout")
+                        .with(csrf())
+                )
                 .andExpect(status().isOk());
     }
 
@@ -95,8 +99,19 @@ class AuthenticationControllerTest {
         doThrow(UserNotFoundException.class)
                 .when(authenticationService).logout(any(HttpServletRequest.class), any(HttpServletResponse.class));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/auth/logout"))
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/logout")
+                        .with(csrf())
+                )
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testLogout_WithCSRFDisabled() throws Exception {
+        doThrow(UserNotFoundException.class)
+                .when(authenticationService).logout(any(HttpServletRequest.class), any(HttpServletResponse.class));
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/logout"))
+                .andExpect(status().isForbidden());
     }
 
     private String generateUserAuthRequest() throws JsonProcessingException {

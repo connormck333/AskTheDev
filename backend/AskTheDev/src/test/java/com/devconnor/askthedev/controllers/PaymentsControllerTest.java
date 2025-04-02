@@ -29,6 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -70,6 +71,7 @@ class PaymentsControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/payment/create-checkout")
                         .contentType(APPLICATION_JSON)
                         .content(body)
+                        .with(csrf())
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.url").value(URL));
@@ -83,6 +85,7 @@ class PaymentsControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/payment/create-checkout")
                         .contentType(APPLICATION_JSON)
                         .content(body)
+                        .with(csrf())
                 )
                 .andExpect(status().is(403));
     }
@@ -96,6 +99,7 @@ class PaymentsControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content(STRIPE_PAYLOAD)
                         .header("Stripe-Signature", STRIPE_SIGNATURE)
+                        .with(csrf())
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().string("Purchase successful"));
@@ -106,6 +110,7 @@ class PaymentsControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/payment/event")
                         .contentType(APPLICATION_JSON)
                         .content(STRIPE_PAYLOAD)
+                        .with(csrf())
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -115,6 +120,7 @@ class PaymentsControllerTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/payment/event")
                         .contentType(APPLICATION_JSON)
                         .header("Stripe-Signature", STRIPE_SIGNATURE)
+                        .with(csrf())
                 )
                 .andExpect(status().isBadRequest());
     }
@@ -128,6 +134,7 @@ class PaymentsControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/payment/manage-subscription")
                         .queryParam("userId", userId.toString())
+                        .with(csrf())
                 )
                 .andExpect(status().isOk());
     }
@@ -138,6 +145,7 @@ class PaymentsControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/payment/manage-subscription")
                         .queryParam("userId", userId.toString())
+                        .with(csrf())
                 )
                 .andExpect(status().isForbidden());
     }
@@ -145,7 +153,9 @@ class PaymentsControllerTest {
     @Test
     @WithMockUser
     void testManageSubscription_MissingUserId() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/payment/manage-subscription"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/payment/manage-subscription")
+                        .with(csrf())
+                )
                 .andExpect(status().isBadRequest());
     }
 
@@ -158,6 +168,7 @@ class PaymentsControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.get("/payment/manage-subscription")
                         .queryParam("userId", userId.toString())
+                        .with(csrf())
                 )
                 .andExpect(status().isBadRequest());
     }

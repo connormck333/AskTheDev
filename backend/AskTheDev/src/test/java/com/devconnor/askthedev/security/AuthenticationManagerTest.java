@@ -1,5 +1,8 @@
 package com.devconnor.askthedev.security;
 
+import com.devconnor.askthedev.utils.EnvUtils;
+import com.devconnor.askthedev.utils.EnvironmentType;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -36,6 +39,11 @@ class AuthenticationManagerTest {
 
     private static final String TEST_EMAIL = "test@email.com";
     private static final String TEST_PASSWORD = "testPassw0rd123%";
+
+    @BeforeAll
+    static void setUp() {
+        EnvUtils.loadDotEnv(EnvironmentType.LOCAL);
+    }
 
     @Test
     void testAuthentication_Successful() {

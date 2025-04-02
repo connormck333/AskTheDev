@@ -21,13 +21,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
-        String token = jwtUtil.getTokenFromCookie(request);
-        if (token == null) {
+        String jwtToken = jwtUtil.getTokenFromCookie(request);
+        if (jwtToken == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String email = jwtUtil.extractUserEmail(token);
+        String email = jwtUtil.extractUserEmail(jwtToken);
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             if (jwtUtil.isSessionValid(request, email)) {
                 var authToken = new UsernamePasswordAuthenticationToken(email, null, List.of());

@@ -40,7 +40,7 @@ public class AuthenticationService {
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
-            jwtUtil.saveHttpCookie(response, email);
+            jwtUtil.saveHttpCookies(response, email);
 
             UserDTO user = userService.getUserByEmail(email);
             return userService.getATDUserResponseByUser(user);
@@ -60,7 +60,7 @@ public class AuthenticationService {
 
         User savedUser = userRepository.save(user);
 
-        jwtUtil.saveHttpCookie(response, email);
+        jwtUtil.saveHttpCookies(response, email);
 
         ATDUserResponse atdUserResponse = new ATDUserResponse();
         atdUserResponse.setUserId(savedUser.getId());

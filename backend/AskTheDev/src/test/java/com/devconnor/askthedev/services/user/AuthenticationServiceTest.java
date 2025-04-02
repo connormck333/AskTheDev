@@ -95,7 +95,7 @@ class AuthenticationServiceTest {
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(mockedAuthentication);
-        doNothing().when(jwtUtil).saveHttpCookie(response, EMAIL);
+        doNothing().when(jwtUtil).saveHttpCookies(response, EMAIL);
         when(userService.getATDUserResponseByUser(any())).thenReturn(atdUserResponse);
 
         ATDUserResponse atdResponse = authenticationService.login(response, EMAIL, PASSWORD);
@@ -119,7 +119,7 @@ class AuthenticationServiceTest {
         when(userRepository.existsUserByEmail(EMAIL)).thenReturn(false);
         when(passwordEncoder.encode(PASSWORD)).thenReturn(ENCODED_PASSWORD);
         when(userRepository.save(any())).thenReturn(user);
-        doNothing().when(jwtUtil).saveHttpCookie(response, EMAIL);
+        doNothing().when(jwtUtil).saveHttpCookies(response, EMAIL);
 
         ATDUserResponse atdUserResponse = authenticationService.register(response, EMAIL, PASSWORD);
 

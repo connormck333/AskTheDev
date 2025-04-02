@@ -18,6 +18,8 @@ import org.springframework.http.HttpHeaders;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 
 import static com.devconnor.askthedev.utils.Utils.createRefreshToken;
 import static org.junit.jupiter.api.Assertions.*;
@@ -82,12 +84,17 @@ class JwtUtilTest {
 
     @Test
     void testIsSessionValid_Successful() {
-        String token = jwtUtil.generateJwtToken(TEST_EMAIL);
-        Cookie cookie = new Cookie("token", token);
+        String jwtToken = jwtUtil.generateJwtToken(TEST_EMAIL);
+        Cookie jwtCookie = new Cookie("token", jwtToken);
+
+        String csrfToken = UUID.randomUUID().toString();
+        Cookie csrfCookie = new Cookie("csrfToken", csrfToken);
+
         RefreshToken refreshToken = createRefreshToken();
 
-        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
-        when(refreshTokenRepository.findByToken(token)).thenReturn(refreshToken);
+        when(request.getCookies()).thenReturn(new Cookie[]{jwtCookie, csrfCookie});
+        when(refreshTokenRepository.findByToken(jwtToken)).thenReturn(refreshToken);
+        when(request.getHeader("X-CSRF-TOKEN")).thenReturn(csrfToken);
 
         boolean isSessionValid = jwtUtil.isSessionValid(request, TEST_EMAIL);
 
@@ -142,17 +149,21 @@ class JwtUtilTest {
     }
 
     @Test
-    void testSaveHttpCookie_Successful() {
-        jwtUtil.saveHttpCookie(response, TEST_EMAIL);
+    void testSaveHttpCookies_Successful() {
+        jwtUtil.saveHttpCookies(response, TEST_EMAIL);
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        verify(response).addHeader(eq(HttpHeaders.SET_COOKIE), captor.capture());
+        verify(response, times(2)).addHeader(eq(HttpHeaders.SET_COOKIE), captor.capture());
 
-        String cookie = captor.getValue();
+        List<String> cookies = captor.getAllValues();
 
-        assertNotNull(cookie);
-        assertTrue(cookie.contains("token="));
-        assertTrue(cookie.contains("HttpOnly"));
+        assertEquals(2, cookies.size());
+
+        assertTrue(cookies.getFirst().contains("token="));
+        assertTrue(cookies.getFirst().contains("HttpOnly"));
+
+        assertTrue(cookies.get(1).contains("csrfToken="));
+        assertFalse(cookies.get(1).contains("HttpOnly"));
     }
 
     @Test

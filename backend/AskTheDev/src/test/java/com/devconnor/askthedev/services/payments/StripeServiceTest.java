@@ -7,6 +7,8 @@ import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.services.user.UserService;
+import com.devconnor.askthedev.utils.EnvUtils;
+import com.devconnor.askthedev.utils.EnvironmentType;
 import com.devconnor.askthedev.utils.SubscriptionType;
 import com.stripe.model.Customer;
 import com.stripe.model.Event;
@@ -17,6 +19,7 @@ import com.stripe.param.CustomerCreateParams;
 import com.stripe.param.billingportal.ConfigurationCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -77,6 +80,11 @@ class StripeServiceTest {
     private MockedStatic<com.stripe.model.billingportal.Session> mockedStaticBillingSession;
 
     private MockedStatic<Configuration> mockedStaticConfiguration;
+
+    @BeforeAll
+    static void setup() {
+        EnvUtils.loadDotEnv(EnvironmentType.LOCAL);
+    }
 
     @BeforeEach
     void setUp() {
