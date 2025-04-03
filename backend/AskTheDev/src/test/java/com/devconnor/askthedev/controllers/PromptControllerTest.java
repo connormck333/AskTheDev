@@ -9,6 +9,7 @@ import com.devconnor.askthedev.repositories.SubscriptionRepository;
 import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.security.SecurityConfig;
 import com.devconnor.askthedev.services.prompt.PromptService;
+import com.devconnor.askthedev.utils.ModelType;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -160,6 +161,23 @@ class PromptControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/summarise/%s", userId))
                         .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    void testSummarise_InvalidModelType() throws Exception {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = generatePrompt(userId);
+        prompt.setModelType(ModelType.GPT4O_MINI);
+
+        String body = convertToJson(prompt);
+        body = body.replace("GPT4O_MINI", "invalidModelType");
+
+        mockMvc.perform(MockMvcRequestBuilders.post(String.format("/prompt/summarise/%s", userId))
+                        .contentType(APPLICATION_JSON)
+                        .content(body)
                 )
                 .andExpect(status().isBadRequest());
     }

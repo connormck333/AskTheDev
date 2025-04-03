@@ -8,6 +8,7 @@ import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.Prompt;
 import com.devconnor.askthedev.repositories.PromptRepository;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
+import com.devconnor.askthedev.utils.ModelType;
 import com.devconnor.askthedev.utils.SubscriptionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,10 +34,10 @@ public class PromptService {
         if (!isValidPromptRequest(atdPromptResponse, prompt) || !isValidWebUrl(atdPromptResponse, prompt.getWebUrl())) {
             throw new InvalidPromptException();
         }
-        validateUserSubscription(prompt.getUserId(), false);
+        validateUserSubscription(prompt.getUserId(), prompt.getModelType(), false);
 
         prompt.setOpenAIResponse(
-                openAIService.sendPrompt(prompt.getPageContent(), prompt.getUserPrompt())
+                openAIService.sendPrompt(prompt.getPageContent(), prompt.getUserPrompt(), prompt.getModelType())
         );
 
         atdPromptResponse.setPrompt(prompt);
@@ -49,11 +50,11 @@ public class PromptService {
             throw new InvalidPromptException();
         }
 
-        validateUserSubscription(prompt.getUserId(), true);
+        validateUserSubscription(prompt.getUserId(), prompt.getModelType(), true);
         prompt.setUserPrompt("Summarise this web page.");
 
         prompt.setOpenAIResponse(
-                openAIService.summariseWebPage(prompt.getPageContent())
+                openAIService.summariseWebPage(prompt.getPageContent(), prompt.getModelType())
         );
 
         atdPromptResponse.setPrompt(prompt);
@@ -74,7 +75,7 @@ public class PromptService {
         return atdPromptListResponse;
     }
 
-    private void validateUserSubscription(UUID userId, boolean expectedPro) {
+    private void validateUserSubscription(UUID userId, ModelType modelType, boolean expectedPro) {
         ATDSubscription subscription = subscriptionRepository.getSubscriptionByUserId(userId);
         if (
                 subscription == null
@@ -85,6 +86,10 @@ public class PromptService {
 
         if (expectedPro && subscription.getType() != SubscriptionType.PRO) {
             throw new InvalidSubscriptionException();
+        }
+
+        if (modelType != ModelType.GPT4O_MINI && subscription.getType() != SubscriptionType.PRO) {
+            throw new InvalidModelTypeException(modelType.getValue());
         }
 
         validateUserPromptsAmount(userId, subscription.getType());

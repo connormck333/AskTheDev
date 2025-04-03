@@ -1,6 +1,7 @@
 package com.devconnor.askthedev.services.prompt;
 
 import com.devconnor.askthedev.exception.InvalidPromptException;
+import com.devconnor.askthedev.utils.ModelType;
 import com.openai.client.OpenAIClient;
 import com.openai.models.ChatCompletion;
 import com.openai.models.ChatCompletionCreateParams;
@@ -57,7 +58,7 @@ class OpenAIServiceTest {
         when(completionService.create(any(ChatCompletionCreateParams.class))).thenReturn(chatCompletion);
         when(chatCompletion.choices()).thenReturn(choices);
 
-        String response = openAIService.sendPrompt(PAGE_CONTENT, PROMPT_TEXT);
+        String response = openAIService.sendPrompt(PAGE_CONTENT, PROMPT_TEXT, ModelType.GPT4O);
 
         assertEquals(RESPONSE_TEXT, response);
     }
@@ -68,7 +69,7 @@ class OpenAIServiceTest {
         when(chatService.completions()).thenReturn(completionService);
         when(completionService.create(any(ChatCompletionCreateParams.class))).thenThrow(InvalidPromptException.class);
 
-        assertThrows(InvalidPromptException.class, () -> openAIService.sendPrompt(PAGE_CONTENT, PROMPT_TEXT));
+        assertThrows(InvalidPromptException.class, () -> openAIService.sendPrompt(PAGE_CONTENT, PROMPT_TEXT, ModelType.GPT4O));
     }
 
     @Test
@@ -78,7 +79,7 @@ class OpenAIServiceTest {
         when(completionService.create(any(ChatCompletionCreateParams.class))).thenReturn(chatCompletion);
         when(chatCompletion.choices()).thenReturn(null);
 
-        assertThrows(InvalidPromptException.class, () -> openAIService.sendPrompt(PAGE_CONTENT, PROMPT_TEXT));
+        assertThrows(InvalidPromptException.class, () -> openAIService.sendPrompt(PAGE_CONTENT, PROMPT_TEXT, ModelType.GPT4O));
     }
 
     @Test
@@ -90,7 +91,7 @@ class OpenAIServiceTest {
         when(completionService.create(any(ChatCompletionCreateParams.class))).thenReturn(chatCompletion);
         when(chatCompletion.choices()).thenReturn(choices);
 
-        assertThrows(InvalidPromptException.class, () -> openAIService.sendPrompt(PAGE_CONTENT, PROMPT_TEXT));
+        assertThrows(InvalidPromptException.class, () -> openAIService.sendPrompt(PAGE_CONTENT, PROMPT_TEXT, ModelType.GPT4O));
     }
 
     @Test
@@ -102,7 +103,7 @@ class OpenAIServiceTest {
         when(completionService.create(any(ChatCompletionCreateParams.class))).thenReturn(chatCompletion);
         when(chatCompletion.choices()).thenReturn(choices);
 
-        assertThrows(InvalidPromptException.class, () -> openAIService.sendPrompt(PAGE_CONTENT, PROMPT_TEXT));
+        assertThrows(InvalidPromptException.class, () -> openAIService.sendPrompt(PAGE_CONTENT, PROMPT_TEXT, ModelType.GPT4O));
     }
 
     private List<ChatCompletion.Choice> createChoices() {

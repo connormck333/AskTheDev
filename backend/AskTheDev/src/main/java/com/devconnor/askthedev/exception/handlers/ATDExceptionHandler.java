@@ -30,7 +30,8 @@ public class ATDExceptionHandler {
     @ExceptionHandler(value = {
             InvalidUserIdException.class,
             InvalidEventException.class,
-            InvalidPromptException.class
+            InvalidPromptException.class,
+            InvalidModelTypeException.class,
     })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public @ResponseBody ATDErrorResponse handleInvalidException(Exception e) {

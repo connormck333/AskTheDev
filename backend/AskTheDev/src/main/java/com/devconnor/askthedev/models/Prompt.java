@@ -1,5 +1,8 @@
 package com.devconnor.askthedev.models;
 
+import com.devconnor.askthedev.utils.ModelType;
+import com.devconnor.askthedev.utils.ModelTypeDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +30,9 @@ public class Prompt {
 
     @Column(columnDefinition = "TEXT")
     private String openAIResponse;
+
+    @JsonDeserialize(using = ModelTypeDeserializer.class)
+    private ModelType modelType;
 
     @CreationTimestamp
     @Column(updatable = false)

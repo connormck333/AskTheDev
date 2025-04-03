@@ -64,8 +64,8 @@ public class StripeService {
         try {
             SessionCreateParams params = SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
-                    .setSuccessUrl("https://lesson-link.co.uk")
-                    .setCancelUrl("https://lesson-link.co.uk")
+                    .setSuccessUrl("https://askthedev.io/checkout-success")
+                    .setCancelUrl("https://askthedev.io/checkout-failure")
                     .setCustomer(customer.getId())
                     .addLineItem(SessionCreateParams.LineItem.builder()
                             .setQuantity(1L)
@@ -90,7 +90,7 @@ public class StripeService {
             com.stripe.param.billingportal.SessionCreateParams params = com.stripe.param.billingportal.SessionCreateParams.builder()
                     .setConfiguration(config.getId())
                     .setCustomer(customer.getId())
-                    .setReturnUrl("https://lesson-link.co.uk")
+                    .setReturnUrl("https://askthedev.io/")
                     .build();
             com.stripe.model.billingportal.Session session = com.stripe.model.billingportal.Session.create(params);
 

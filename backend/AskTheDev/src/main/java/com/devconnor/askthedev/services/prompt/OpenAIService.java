@@ -2,6 +2,7 @@ package com.devconnor.askthedev.services.prompt;
 
 import com.devconnor.askthedev.exception.InvalidPromptException;
 import com.devconnor.askthedev.utils.EnvUtils;
+import com.devconnor.askthedev.utils.ModelType;
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
 import com.openai.models.*;
@@ -11,8 +12,6 @@ import java.util.List;
 
 @Service
 public class OpenAIService {
-
-    private static final String MODEL_NAME = "gpt-4o-mini";
 
     private final OpenAIClient openAIClient;
 
@@ -27,7 +26,7 @@ public class OpenAIService {
                 .build();
     }
 
-    public String sendPrompt(String pageContent, String prompt) {
+    public String sendPrompt(String pageContent, String prompt, ModelType modelType) {
         ChatCompletionSystemMessageParam systemMessage = ChatCompletionSystemMessageParam.builder()
                 .content("""
                         You are a software engineer expert. A user will provide you with a question based on the current tab that they have open.
@@ -49,7 +48,7 @@ public class OpenAIService {
         ChatCompletionCreateParams params = ChatCompletionCreateParams.builder()
                 .addMessage(systemMessage)
                 .addMessage(userMessage)
-                .model(MODEL_NAME)
+                .model(modelType.getValue())
                 .build();
 
         try {
@@ -60,8 +59,8 @@ public class OpenAIService {
         }
     }
 
-    public String summariseWebPage(String pageContent) {
-        return sendPrompt(pageContent, "Summarise this web page.");
+    public String summariseWebPage(String pageContent, ModelType modelType) {
+        return sendPrompt(pageContent, "Summarise this web page.", modelType);
     }
 
     private String getResponse(List<ChatCompletion.Choice> choices) {

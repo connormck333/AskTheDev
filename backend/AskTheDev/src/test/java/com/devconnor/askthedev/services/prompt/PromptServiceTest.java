@@ -1,14 +1,12 @@
 package com.devconnor.askthedev.services.prompt;
 
 import com.devconnor.askthedev.controllers.response.ATDPromptListResponse;
-import com.devconnor.askthedev.exception.InvalidPromptException;
-import com.devconnor.askthedev.exception.InvalidSubscriptionException;
-import com.devconnor.askthedev.exception.PromptLimitReachedException;
-import com.devconnor.askthedev.exception.SubscriptionNotFoundException;
+import com.devconnor.askthedev.exception.*;
 import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.Prompt;
 import com.devconnor.askthedev.repositories.PromptRepository;
 import com.devconnor.askthedev.repositories.SubscriptionRepository;
+import com.devconnor.askthedev.utils.ModelType;
 import com.devconnor.askthedev.utils.SubscriptionType;
 import com.devconnor.askthedev.utils.Utils;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,7 +65,7 @@ class PromptServiceTest {
 
         assertDoesNotThrow(() -> promptService.sendPromptToOpenAI(prompt));
 
-        verify(openAIService, times(1)).sendPrompt(anyString(), anyString());
+        verify(openAIService, times(1)).sendPrompt(anyString(), anyString(), eq(prompt.getModelType()));
     }
 
     @Test
@@ -82,7 +80,7 @@ class PromptServiceTest {
 
         assertDoesNotThrow(() -> promptService.sendPromptToOpenAI(prompt));
 
-        verify(openAIService, times(1)).sendPrompt(anyString(), anyString());
+        verify(openAIService, times(1)).sendPrompt(anyString(), anyString(), eq(prompt.getModelType()));
     }
 
     @ParameterizedTest
@@ -90,6 +88,7 @@ class PromptServiceTest {
     void testSendPromptToOpenAI_PromptLimitReached(SubscriptionType subscriptionType) {
         UUID userId = UUID.randomUUID();
         Prompt prompt = createPrompt(userId);
+        prompt.setModelType(ModelType.GPT4O_MINI);
         List<Prompt> previousTodayPrompts = createPromptList(50, userId);
         ATDSubscription subscription = createATDSubscription(userId);
         subscription.setType(subscriptionType);
@@ -133,12 +132,24 @@ class PromptServiceTest {
 
         assertDoesNotThrow(() -> promptService.sendPromptToOpenAI(prompt));
 
-        verify(openAIService, times(1)).sendPrompt(anyString(), anyString());
+        verify(openAIService, times(1)).sendPrompt(anyString(), anyString(), eq(prompt.getModelType()));
     }
 
     @Test
     void testSendPromptToOpenAI_NullPrompt() {
         assertThrows(InvalidPromptException.class, () -> promptService.sendPromptToOpenAI(null));
+    }
+
+    @Test
+    void testSendPromptToOpenAI_InvalidModelType() {
+        UUID userId = UUID.randomUUID();
+        Prompt prompt = createPrompt(userId);
+        ATDSubscription subscription = createATDSubscription(userId);
+        subscription.setType(SubscriptionType.BASIC);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
+
+        assertThrows(InvalidModelTypeException.class, () -> promptService.sendPromptToOpenAI(prompt));
     }
 
     @ParameterizedTest
@@ -171,7 +182,7 @@ class PromptServiceTest {
 
         when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
         when(promptRepository.findAllByUserIdAndCreatedAtToday(eq(userId), any(LocalDateTime.class))).thenReturn(List.of());
-        when(openAIService.sendPrompt(anyString(), anyString())).thenThrow(InvalidPromptException.class);
+        when(openAIService.sendPrompt(anyString(), anyString(), eq(prompt.getModelType()))).thenThrow(InvalidPromptException.class);
 
         assertThrows(InvalidPromptException.class, () -> promptService.sendPromptToOpenAI(prompt));
     }
@@ -187,7 +198,7 @@ class PromptServiceTest {
 
         assertDoesNotThrow(() -> promptService.summariseWebPage(prompt));
 
-        verify(openAIService, times(1)).summariseWebPage(anyString());
+        verify(openAIService, times(1)).summariseWebPage(anyString(), eq(prompt.getModelType()));
     }
 
     @Test
@@ -202,7 +213,7 @@ class PromptServiceTest {
 
         assertDoesNotThrow(() -> promptService.summariseWebPage(prompt));
 
-        verify(openAIService, times(1)).summariseWebPage(anyString());
+        verify(openAIService, times(1)).summariseWebPage(anyString(), eq(prompt.getModelType()));
     }
 
     @Test
@@ -250,7 +261,7 @@ class PromptServiceTest {
 
         when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(subscription);
         when(promptRepository.findAllByUserIdAndCreatedAtToday(eq(userId), any(LocalDateTime.class))).thenReturn(List.of());
-        when(openAIService.summariseWebPage(anyString())).thenThrow(InvalidPromptException.class);
+        when(openAIService.summariseWebPage(anyString(), eq(prompt.getModelType()))).thenThrow(InvalidPromptException.class);
 
         assertThrows(InvalidPromptException.class, () -> promptService.summariseWebPage(prompt));
     }
@@ -324,6 +335,7 @@ class PromptServiceTest {
         prompt.setUserPrompt(PROMPT_TEXT);
         prompt.setUserId(userId);
         prompt.setPageContent(PAGE_CONTENT);
+        prompt.setModelType(ModelType.GPT4O);
 
         return prompt;
     }

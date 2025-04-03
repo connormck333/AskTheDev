@@ -67,7 +67,8 @@ class ATDExceptionHandlerTest {
         return Stream.of(
                 Arguments.of(new InvalidUserIdException(userId), String.format("Invalid user ID: %s", userId)),
                 Arguments.of(new InvalidEventException(), "Invalid event."),
-                Arguments.of(new InvalidPromptException(), "Invalid prompt.")
+                Arguments.of(new InvalidPromptException(), "Invalid prompt."),
+                Arguments.of(new InvalidModelTypeException("invalidModelType"), "Invalid model type: invalidModelType")
         );
     }
 
