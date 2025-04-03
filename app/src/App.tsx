@@ -7,6 +7,7 @@ import { getCurrentUser } from './methods/userManagement/getCurrentUser';
 import SubscriptionScreen from './screens/SubscriptionScreen';
 import LoginScreen from './screens/LoginScreen';
 import ScreenType from './utils/ScreenType';
+import LoadingScreen from './screens/LoadingScreen';
 
 function App(): ReactElement {
 
@@ -25,14 +26,12 @@ function App(): ReactElement {
             return;
         }
 
-        if (signedIn || signedInUser) {}
-
         setSignedInUser(response.data);
         setSignedIn(true);
     }
 
     if (signedIn === undefined) {
-        return <div />
+        return <LoadingScreen />
     }
   
     return (

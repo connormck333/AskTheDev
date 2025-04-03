@@ -1,15 +1,19 @@
 import { GetParam, Status } from "../utils/interfaces";
 
 const URL: string = "http://localhost:8080";
+// const URL: string = "https://askthedevapi.onrender.com"
 
 async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
     try {
+        const csrfToken: string = await getCsrfToken();
+
         const response = await fetch(URL + endpoint, {
             method: 'POST',
             credentials: "include",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
             },
             body: JSON.stringify(body)
         });
@@ -26,18 +30,22 @@ async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
         return { success: true, data: data };
 
     } catch (error: any) {
+        console.log(error);
         return { success: false };
     }
 }
 
 async function sendGetRequest(endpoint: string, params: GetParam[]): Promise<Status> {
     try {
+        const csrfToken: string = await getCsrfToken();
+
         const response = await fetch(URL + endpoint + formatParams(params), {
             method: 'GET',
             credentials: "include",
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
             }
         });
 
@@ -58,52 +66,6 @@ async function sendGetRequest(endpoint: string, params: GetParam[]): Promise<Sta
     }
 }
 
-async function sendDeleteRequest(endpoint: string, body: any): Promise<Status> {
-    try {
-        const response = await fetch(URL + endpoint, {
-            method: 'DELETE',
-            credentials: "include",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body)
-        });
-
-        if (response.status != 200) {
-            return { success: false };
-        }
-
-        return { success: true };
-
-    } catch (error: any) {
-        return { success: false };
-    }
-}
-
-async function sendPutRequest(endpoint: string, body: any): Promise<Status> {
-    try {
-        const response = await fetch(URL + endpoint, {
-            method: 'PUT',
-            credentials: "include",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body)
-        });
-
-        if (response.status != 200) {
-            return { success: false };
-        }
-
-        return { success: true };
-
-    } catch (error: any) {
-        return { success: false };
-    }
-}
-
 function formatParams(params: GetParam[]): string {
     if (params.length === 0) return "";
     
@@ -116,9 +78,17 @@ function formatParams(params: GetParam[]): string {
     return query;
 }
 
+async function getCsrfToken(): Promise<string> {
+    const cookie = await chrome.cookies.get({
+        name: "X-CSRF-TOKEN",
+        url: URL
+    });
+    console.log(cookie?.value);
+
+    return cookie?.value || "";
+}
+
 export {
     sendPostRequest,
-    sendGetRequest,
-    sendDeleteRequest,
-    sendPutRequest
+    sendGetRequest
 }

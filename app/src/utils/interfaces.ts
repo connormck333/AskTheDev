@@ -42,6 +42,11 @@ interface User {
     subscriptionType?: SubscriptionType
 }
 
+interface Model {
+    name: string;
+    description: string;
+}
+
 type ScrollContainer = RefObject<HTMLDivElement | null>;
 
 export type {
@@ -51,5 +56,6 @@ export type {
     SendPromptBody,
     SendPromptResponse,
     User,
+    Model,
     ScrollContainer
 }

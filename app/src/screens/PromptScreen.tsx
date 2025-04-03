@@ -72,7 +72,7 @@ Please ask me anything, I am already caught up with your current webpage!
             >
                 <div
                     ref={scrollContainer}
-                    className="overflow-scroll scrollbar-hidden flex flex-col items-center h-[70vh] w-[32rem]"
+                    className="overflow-scroll scrollbar-hidden flex flex-col items-center h-[75vh] w-[32rem]"
                 >
                     
                         <Logo />
