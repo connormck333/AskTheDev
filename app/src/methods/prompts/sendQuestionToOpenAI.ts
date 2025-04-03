@@ -3,7 +3,7 @@ import { getCurrentTabHTML } from "../chrome/getCurrentTabHTML";
 import { getCurrentWebUrl } from "../chrome/getCurrentWebUrl";
 import { sendPostRequest } from "../requests";
 
-async function sendQuestionToOpenAI(userId: string, prompt: string): Promise<Status> {
+async function sendQuestionToOpenAI(userId: string, prompt: string, model: string): Promise<Status> {
     const tabTextContent = await getCurrentTabHTML();
     if (!tabTextContent.success) {
         return { success: false };
@@ -22,7 +22,8 @@ async function sendQuestionToOpenAI(userId: string, prompt: string): Promise<Sta
     const body: SendPromptBody = {
         userPrompt: prompt,
         pageContent: tabTextContent.data as string,
-        webUrl: webUrl.data as string
+        webUrl: webUrl.data as string,
+        modelType: model
     }
 
     return await sendPostRequest(`/prompt/${userId}`, body);

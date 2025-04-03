@@ -20,9 +20,10 @@ interface GetParam {
 }
 
 interface SendPromptBody {
-    userPrompt: string,
-    pageContent: string,
-    webUrl: string
+    userPrompt: string;
+    pageContent: string;
+    webUrl: string;
+    modelType: string;
 }
 
 interface SendPromptResponse {
@@ -45,6 +46,7 @@ interface User {
 interface Model {
     name: string;
     description: string;
+    id: string;
 }
 
 type ScrollContainer = RefObject<HTMLDivElement | null>;

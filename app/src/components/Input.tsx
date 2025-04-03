@@ -16,9 +16,9 @@ interface InputProps {
 }
 
 const models: Model[] = [
-    { name: "GPT-4o mini", description: "A lightweight version of GPT-4o, optimized for speed and efficiency." },
-    { name: "GPT-4o", description: "The latest OpenAI model offering top-tier performance across multiple tasks." },
-    { name: "OpenAI o3-mini", description: "A compact and cost-effective AI model designed for quick responses. (Best for coding)" },
+    { name: "GPT-4o mini", description: "A lightweight version of GPT-4o, optimized for speed and efficiency.", id: "gpt-4o-mini" },
+    { name: "GPT-4o", description: "The latest OpenAI model offering top-tier performance across multiple tasks.", id: "gpt-4o" },
+    { name: "OpenAI o3-mini", description: "A compact and cost-effective AI model designed for quick responses. (Best for coding)", id: "o3-mini" },
 ];
 
 export default function Input(props: InputProps): ReactElement {
@@ -52,7 +52,7 @@ export default function Input(props: InputProps): ReactElement {
 
         setLoading(true);
 
-        const response: Status = await sendQuestionToOpenAI(user.userId, prompt);
+        const response: Status = await sendQuestionToOpenAI(user.userId, prompt, selectedModel.id);
 
         setLoading(false);
 
@@ -79,7 +79,7 @@ export default function Input(props: InputProps): ReactElement {
 
         setLoading(true);
 
-        const response: Status = await summariseWebPage(user.userId);
+        const response: Status = await summariseWebPage(user.userId, selectedModel.id);
 
         setLoading(false);
 

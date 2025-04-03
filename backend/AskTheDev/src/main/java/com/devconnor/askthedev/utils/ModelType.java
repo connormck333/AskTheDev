@@ -10,7 +10,7 @@ public enum ModelType {
 
     GPT4O_MINI("gpt-4o-mini"),
     GPT4O("gpt-4o"),
-    OPENAI_O3_MINI("openai-o3-mini");
+    OPENAI_O3_MINI("o3-mini");
 
     private final String value;
 
