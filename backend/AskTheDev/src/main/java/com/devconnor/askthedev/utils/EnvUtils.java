@@ -1,11 +1,13 @@
 package com.devconnor.askthedev.utils;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import lombok.Getter;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class EnvUtils {
 
+    @Getter
     private static EnvironmentType envType = EnvironmentType.LOCAL;
     private static Dotenv dotenv;
 
