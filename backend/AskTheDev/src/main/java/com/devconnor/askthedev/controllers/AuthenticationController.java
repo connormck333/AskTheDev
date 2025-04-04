@@ -1,6 +1,7 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.response.ATDUserResponse;
+import com.devconnor.askthedev.exception.TermsNotAcceptedException;
 import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.models.UserAuthRequest;
 import com.devconnor.askthedev.services.user.AuthenticationService;
@@ -31,6 +32,9 @@ public class AuthenticationController {
 
     @PostMapping("/signup")
     public ResponseEntity<ATDUserResponse> registerUser(HttpServletResponse response, @RequestBody UserAuthRequest userAuthRequest) {
+        if (!userAuthRequest.isTermsAccepted()) {
+            throw new TermsNotAcceptedException();
+        }
         ATDUserResponse userResponse = authenticationService.register(response, userAuthRequest.getEmail(), userAuthRequest.getPassword());
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }

@@ -85,7 +85,8 @@ class ATDExceptionHandlerTest {
         return Stream.of(
                 Arguments.of(new InvalidSessionException(), "Invalid session."),
                 Arguments.of(new InvalidSubscriptionException(), "Invalid subscription."),
-                Arguments.of(new PromptLimitReachedException(), "Prompt limit reached.")
+                Arguments.of(new PromptLimitReachedException(), "Prompt limit reached."),
+                Arguments.of(new TermsNotAcceptedException(), "You must accept the Terms & Conditions to create an account.")
         );
     }
 

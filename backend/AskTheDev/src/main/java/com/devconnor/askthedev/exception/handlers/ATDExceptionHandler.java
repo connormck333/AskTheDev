@@ -41,7 +41,8 @@ public class ATDExceptionHandler {
     @ExceptionHandler(value = {
             InvalidSessionException.class,
             InvalidSubscriptionException.class,
-            PromptLimitReachedException.class
+            PromptLimitReachedException.class,
+            TermsNotAcceptedException.class,
     })
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public @ResponseBody ATDErrorResponse handleInvalidSessionException(Exception e) {

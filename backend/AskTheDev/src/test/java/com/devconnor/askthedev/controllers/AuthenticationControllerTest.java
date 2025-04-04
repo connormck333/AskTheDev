@@ -67,6 +67,22 @@ class AuthenticationControllerTest {
     }
 
     @Test
+    void testRegister_TermsNotAccepted() throws Exception {
+        UserAuthRequest userAuthRequest = new UserAuthRequest();
+        userAuthRequest.setEmail(EMAIL);
+        userAuthRequest.setPassword(PASSWORD);
+        userAuthRequest.setTermsAccepted(false);
+
+        String body = convertToJson(userAuthRequest);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/signup")
+                        .contentType(APPLICATION_JSON)
+                        .content(body)
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void testLogin_WithValidEmailAndPassword() throws Exception {
         UUID userId = UUID.randomUUID();
         ATDUserResponse userResponse = generateUserResponse(userId);
@@ -104,6 +120,7 @@ class AuthenticationControllerTest {
         UserAuthRequest userAuthRequest = new UserAuthRequest();
         userAuthRequest.setEmail(EMAIL);
         userAuthRequest.setPassword(PASSWORD);
+        userAuthRequest.setTermsAccepted(true);
 
         return convertToJson(userAuthRequest);
     }
