@@ -47,6 +47,7 @@ interface Model {
     name: string;
     description: string;
     id: string;
+    proFeature: boolean;
 }
 
 type ScrollContainer = RefObject<HTMLDivElement | null>;

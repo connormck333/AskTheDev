@@ -18,10 +18,14 @@ export default function RegisterScreen(props: RegisterScreenProps): ReactElement
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [confirmPassword, setConfirmPassword] = useState<string>("");
+    const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
 
     async function createUserAccount(): Promise<void> {
-        if (!isValidEmail(email)) {
+        if (!termsAccepted) {
+            alert("You must accept the Terms & Conditions.");
+            return;
+        } else if (!isValidEmail(email)) {
             alert("Invalid email.");
             return;
         } else if (!isValidPassword(password)) {
@@ -43,8 +47,8 @@ export default function RegisterScreen(props: RegisterScreenProps): ReactElement
             return;
         }
 
-        setSignedIn(true);
         setUser(response.data);
+        setSignedIn(true);
     }
 
     function login(): void {
@@ -55,7 +59,7 @@ export default function RegisterScreen(props: RegisterScreenProps): ReactElement
         <section>
             <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
                 <div className="flex items-center mb-6">
-                    <img className="w-auto h-10 mr-2" src="/logo.png" alt="logo"/>
+                    <a href="https://askthedev.io"><img className="w-auto h-10 mr-2" src="/logo.png" alt="logo"/></a>
                 </div>
                 <div className="w-full md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                     <div className="space-y-4 md:space-y-6 sm:p-8">
@@ -83,10 +87,16 @@ export default function RegisterScreen(props: RegisterScreenProps): ReactElement
                             />
                             <div className="flex items-start">
                                 <div className="flex items-center h-5">
-                                    <input aria-describedby="terms" type="checkbox" className="w-4 h-4 border border-gray-300 rounded bg-gray-50 dark:border-gray-200" />
+                                    <input
+                                        checked={termsAccepted}
+                                        onChange={() => setTermsAccepted(!termsAccepted)}
+                                        aria-describedby="terms"
+                                        type="checkbox"
+                                        className="w-4 h-4 border border-gray-300 rounded bg-gray-50 dark:border-gray-200"
+                                    />
                                 </div>
                                 <div className="ml-3 text-sm">
-                                    <label className="font-light text-gray-500 dark:text-gray-300">I accept the <a className="font-medium text-primary-600 hover:underline dark:text-primary-500" href="#">Terms and Conditions</a></label>
+                                    <label className="font-light text-gray-500 dark:text-gray-300">I accept the <a className="font-medium text-primary-600 hover:underline dark:text-primary-500" href="https://askthedev.io/terms">Terms and Conditions</a></label>
                                 </div>
                             </div>
                             <button

@@ -14,7 +14,6 @@ async function getCurrentTabHTML(): Promise<Status> {
 
         return { success: true, data: removeAllTags(response[0].result) };
     } catch (error) {
-        console.log(error);
         return { success: false }
     }
 }

@@ -5,15 +5,12 @@ const URL: string = "http://localhost:8080";
 
 async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
     try {
-        const csrfToken: string = await getCsrfToken();
-
         const response = await fetch(URL + endpoint, {
             method: 'POST',
             credentials: "include",
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(body)
         });
@@ -37,15 +34,12 @@ async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
 
 async function sendGetRequest(endpoint: string, params: GetParam[]): Promise<Status> {
     try {
-        const csrfToken: string = await getCsrfToken();
-
         const response = await fetch(URL + endpoint + formatParams(params), {
             method: 'GET',
             credentials: "include",
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
+                'Content-Type': 'application/json'
             }
         });
 
@@ -76,16 +70,6 @@ function formatParams(params: GetParam[]): string {
     }
 
     return query;
-}
-
-async function getCsrfToken(): Promise<string> {
-    const cookie = await chrome.cookies.get({
-        name: "X-CSRF-TOKEN",
-        url: URL
-    });
-    console.log(cookie?.value);
-
-    return cookie?.value || "";
 }
 
 export {

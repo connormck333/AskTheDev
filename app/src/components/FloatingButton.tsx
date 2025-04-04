@@ -1,6 +1,6 @@
 import { JSX, ReactElement, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, LogOut, Settings2, HelpCircle } from 'lucide-react';
+import { User, LogOut, Settings2, HelpCircle, ScrollText } from 'lucide-react';
 import { Status } from '../utils/interfaces';
 import { logout } from '../methods/userManagement/logout';
 import { createManageSubscriptionSession } from '../methods/payments/createManageSubscriptionSession';
@@ -28,6 +28,7 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
     const menuItems: MenuItem[] = [
         { name: 'Subscription', id: 'subscription', icon: <Settings2 size={18} /> },
         { name: 'Help', id: 'help', icon: <HelpCircle size={18} /> },
+        { name: 'Privacy', id: 'privacy', icon: <ScrollText size={18} /> },
         { name: 'Logout', id: 'logout', icon: <LogOut size={18} /> }
     ];
 
@@ -38,6 +39,12 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
                 break;
             case "subscription":
                 createManageSubscriptionUrl();
+                break;
+            case "help":
+                goToFAQ();
+                break;
+            case "privacy":
+                goToPrivacy();
                 break;
         }
     }
@@ -74,6 +81,14 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
 
     function openManageSubscriptionPage(url: string): void {
         window.open(url);
+    }
+
+    function goToFAQ(): void {
+        window.open("https://askthedev.io/#faq");
+    }
+
+    function goToPrivacy(): void {
+        window.open("https://askthedev.io/privacy");
     }
 
     return (

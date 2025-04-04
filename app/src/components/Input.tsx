@@ -16,9 +16,9 @@ interface InputProps {
 }
 
 const models: Model[] = [
-    { name: "GPT-4o mini", description: "A lightweight version of GPT-4o, optimized for speed and efficiency.", id: "gpt-4o-mini" },
-    { name: "GPT-4o", description: "The latest OpenAI model offering top-tier performance across multiple tasks.", id: "gpt-4o" },
-    { name: "OpenAI o3-mini", description: "A compact and cost-effective AI model designed for quick responses. (Best for coding)", id: "o3-mini" },
+    { name: "GPT-4o mini", description: "A lightweight version of GPT-4o, optimized for speed and efficiency.", id: "gpt-4o-mini", proFeature: false },
+    { name: "GPT-4o", description: "The latest OpenAI model offering top-tier performance across multiple tasks.", id: "gpt-4o", proFeature: true },
+    { name: "OpenAI o3-mini", description: "A compact model designed for quick responses. (Best for coding)", id: "o3-mini", proFeature: true },
 ];
 
 export default function Input(props: InputProps): ReactElement {
@@ -33,7 +33,6 @@ export default function Input(props: InputProps): ReactElement {
     useEffect(() => {
         (() => {
             if (chatStream[chatStream.length - 1].userType === UserType.Client) {
-                console.log("chat streaming");
                 if (scrollContainer?.current) {
                     scrollContainer.current.scrollTop = scrollContainer.current.scrollHeight;                    
                 }
@@ -133,6 +132,7 @@ export default function Input(props: InputProps): ReactElement {
             </form>
             <div className="flex w-full justify-between py-1.5">
                 <ModelSelector
+                    user={user}
                     model={[selectedModel, setSelectedModel]}
                     models={models}
                 />
