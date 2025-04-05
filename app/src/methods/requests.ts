@@ -1,7 +1,7 @@
 import { GetParam, Status } from "../utils/interfaces";
 
 const URL: string = "http://localhost:8080";
-// const URL: string = "https://askthedevapi.onrender.com"
+// const URL: string = "https://www.api.askthedev.io"
 
 async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
     try {
@@ -15,14 +15,14 @@ async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
             body: JSON.stringify(body)
         });
 
-        if (response.status != 200 && response.status != 201) {
-            return { success: false };
-        }
-
         let data: any;
         try {
             data = await response.json();
         } catch (error: any) {}
+
+        if (response.status != 200 && response.status != 201) {
+            return { success: false, errorMessage: data?.message };
+        }
 
         return { success: true, data: data };
 
@@ -43,14 +43,14 @@ async function sendGetRequest(endpoint: string, params: GetParam[]): Promise<Sta
             }
         });
 
-        if (response.status != 200) {
-            return { success: false };
-        }
-
         let data: any;
         try {
             data = await response.json();
         } catch (error: any) {}
+
+        if (response.status != 200) {
+            return { success: false, errorMessage: data?.message };
+        }
 
         return { success: true, data: data };
 

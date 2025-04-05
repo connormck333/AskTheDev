@@ -18,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -46,7 +47,7 @@ public class AuthenticationService {
 
             UserDTO user = userService.getUserByEmail(email);
             return userService.getATDUserResponseByUser(user);
-        } catch (Exception ex) {
+        } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid email or password");
         }
     }

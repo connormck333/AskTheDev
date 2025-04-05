@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Status, User } from '../utils/interfaces';
 import { createCheckoutSession } from '../methods/payments/createCheckoutSession';
-import Loading from '../components/Loading';
-import Button from '../components/Button';
 import { logout } from '../methods/userManagement/logout';
+import GradientButton from '../components/GradientButton';
 
 const tiers = [
     {
@@ -57,7 +56,11 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
         setLoading(false);
 
         if (!response.success) {
-            alert("There was an error creating payment intent.");
+            alert(
+                response.errorMessage
+                ? response.errorMessage
+                : "There was an error creating payment intent."
+            );
             return;
         }
 
@@ -72,7 +75,11 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
         setLogoutLoading(false);
 
         if (!response.success) {
-            alert("There was an error logging you out. Please try again later.");
+            alert(
+                response.errorMessage
+                ? response.errorMessage
+                : "There was an error logging you out. Please try again later."
+            );
             return;
         }
 
@@ -84,12 +91,15 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
     }
 
     return (
-        <div className="relative isolate bg-white px-6 py-12 sm:py-15 lg:px-8">
+        <div className="relative isolate px-6 py-12 sm:py-15 lg:px-8">
             <div className="w-full flex justify-center items-center mb-6">
-                <img className="w-auto h-10 mr-2" src="/logo.png" alt="logo"/>
+                <a target="_blank" href="https://askthedev.io">
+                    <img className="w-auto h-10 mr-2 dark:hidden" src="/logo.png" alt="logo"/>
+                    <img className="hidden w-auto h-10 mr-2 dark:block" src="/logo_dark.png" alt="logo"/>
+                </a>
             </div>
             <div className="mx-auto max-w-4xl text-center">
-                <p className="mt-2 text-2xl font-semibold text-balance text-gray-900 sm:text-4xl">
+                <p className="mt-2 text-2xl font-semibold text-balance text-gray-900 sm:text-4xl dark:text-gray-200">
                     Choose the right plan for you
                 </p>
             </div>
@@ -110,24 +120,19 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
                                 </li>
                             ))}
                         </ul>
-                        <button
-                            type="button"
+                        <GradientButton
                             onClick={() => startCheckout(tier)}
-                            className="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2"
-                        >
-                            <Loading
-                                loading={loading}
-                            >
-                                Subscribe to { tier.name }
-                            </Loading>
-                        </button>
+                            label={"Subscribe to " + tier.name}
+                            loading={loading}
+                        />
                     </div>
                 ))}
 
                 <div className="mt-6">
-                    <Button
-                        label="Logout"
+                    <GradientButton
                         onClick={logoutUser}
+                        label="Logout"
+                        loading={logoutLoading}
                     />
                 </div>
             </div>

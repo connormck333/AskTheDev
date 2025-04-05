@@ -8,11 +8,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ATDExceptionHandlerTest {
 
@@ -29,19 +32,32 @@ class ATDExceptionHandlerTest {
     void handleATDException() {
         ATDException exception = new ATDException();
 
-        ATDErrorResponse response = handler.handleATDException(exception);
+        ResponseEntity<ATDErrorResponse> response = handler.handleATDException(exception);
 
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
-        assertExceptionMessage("An unknown error occurred.", response.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertExceptionMessage("An unknown error occurred.", response.getBody().getMessage());
+    }
+
+    @Test
+    void handleBadCredentialsException() {
+        BadCredentialsException exception = new BadCredentialsException("Invalid email or password.");
+
+        ResponseEntity<ATDErrorResponse> response = handler.handleBadCredentialsException(exception);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Invalid email or password.", response.getBody().getMessage());
     }
 
     @ParameterizedTest
     @MethodSource("handleBadRequestExceptionContent")
     void handleNotFoundException(ATDException e, String message) {
-        ATDErrorResponse response = handler.handleBadRequestException(e);
+        ResponseEntity<ATDErrorResponse> response = handler.handleBadRequestException(e);
 
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
-        assertExceptionMessage(message, response.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertExceptionMessage(message, response.getBody().getMessage());
     }
 
     private static Stream<Arguments> handleBadRequestExceptionContent() {
@@ -56,10 +72,11 @@ class ATDExceptionHandlerTest {
     @ParameterizedTest
     @MethodSource("handleInvalidExceptionContent")
     void handleInvalidException(ATDException e, String message) {
-        ATDErrorResponse response = handler.handleInvalidException(e);
+        ResponseEntity<ATDErrorResponse> response = handler.handleInvalidException(e);
 
-        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getStatusCode());
-        assertExceptionMessage(message, response.getMessage());
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertExceptionMessage(message, response.getBody().getMessage());
     }
 
     private static Stream<Arguments> handleInvalidExceptionContent() {
@@ -75,10 +92,11 @@ class ATDExceptionHandlerTest {
     @ParameterizedTest
     @MethodSource("handleForbiddenExceptionContent")
     void handleInvalidSessionException(ATDException e, String message) {
-        ATDErrorResponse response = handler.handleInvalidSessionException(e);
+        ResponseEntity<ATDErrorResponse> response = handler.handleInvalidSessionException(e);
 
-        assertEquals(HttpStatus.FORBIDDEN.value(), response.getStatusCode());
-        assertExceptionMessage(message, response.getMessage());
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertExceptionMessage(message, response.getBody().getMessage());
     }
 
     private static Stream<Arguments> handleForbiddenExceptionContent() {
@@ -94,10 +112,11 @@ class ATDExceptionHandlerTest {
     void handleExistingUsernameException() {
         ExistingUsernameException exception = new ExistingUsernameException();
 
-        ATDErrorResponse response = handler.handleExistingUsernameException(exception);
+        ResponseEntity<ATDErrorResponse> response = handler.handleExistingUsernameException(exception);
 
-        assertEquals(HttpStatus.CONFLICT.value(), response.getStatusCode());
-        assertExceptionMessage("A user with this email already exists.", response.getMessage());
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertExceptionMessage("A user with this email already exists.", response.getBody().getMessage());
     }
 
     private static void assertExceptionMessage(String expectedMessage, String actualMessage) {

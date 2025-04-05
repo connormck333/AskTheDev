@@ -27,6 +27,7 @@ export default function ModelSelector(props: ModelSelectorProps): ReactElement {
             <Button
                 onClick={() => setIsOpen(!isOpen)}
                 label={selectedModel.name}
+                darkBackgroundColor="#1e5bb9"
             />
             <AnimatePresence>
                 {isOpen && (

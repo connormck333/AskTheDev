@@ -35,7 +35,13 @@ Please ask me anything, I am already caught up with your current webpage!
     async function getPreviousPrompts(): Promise<void> {
         const response: Status = await getPreviousPromptsByPage(user.userId, 0);
         if (!response.success) {
-            alert("There was an error retrieving your prompt history.");
+            const chats: Chat[] = [...chatStream, {
+                message: "There was an error loading your previous messages.",
+                showTyping: false,
+                timestamp: Date.now(),
+                userType: UserType.AI
+            }];
+            setChatStream(chats);
             return;
         }
 

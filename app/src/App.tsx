@@ -11,7 +11,7 @@ import LoadingScreen from './screens/LoadingScreen';
 
 function App(): ReactElement {
 
-    const [signedIn, setSignedIn] = useState<boolean | undefined>(false);
+    const [signedIn, setSignedIn] = useState<boolean | undefined>(undefined);
     const [signedInUser, setSignedInUser] = useState<User | undefined>(undefined);
     const [currentScreen, setCurrentScreen] = useState<ScreenType>(ScreenType.LOGIN);
 

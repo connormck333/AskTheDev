@@ -3,8 +3,9 @@ import UserType from "./UserType"
 import SubscriptionType from "./SubscriptionType";
 
 interface Status {
-    success: boolean,
-    data?: any
+    success: boolean;
+    data?: any;
+    errorMessage?: string;
 }
 
 interface Chat {
