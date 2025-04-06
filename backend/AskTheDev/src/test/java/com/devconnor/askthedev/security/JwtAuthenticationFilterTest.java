@@ -59,7 +59,7 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void testDoFilterInternal_WithValidToken() throws ServletException, IOException {
-        when(jwtUtil.getTokenFromCookie(request)).thenReturn("validToken");
+        when(jwtUtil.getAuthToken(request)).thenReturn("validToken");
         when(jwtUtil.extractUserEmail("validToken")).thenReturn("test@gmail.com");
         when(jwtUtil.isSessionValid(request, "test@gmail.com")).thenReturn(true);
         request.setRequestURI("/payment/create-checkout");
@@ -84,7 +84,7 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void testDoFilterInternal_WithInvalidToken() throws ServletException, IOException {
-        when(jwtUtil.getTokenFromCookie(request)).thenReturn("invalidToken");
+        when(jwtUtil.getAuthToken(request)).thenReturn("invalidToken");
         when(jwtUtil.extractUserEmail("invalidToken")).thenReturn("test@gmail.com");
         when(jwtUtil.isSessionValid(request, "test@gmail.com")).thenReturn(false);
 
@@ -99,7 +99,7 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void testDoFilterInternal_WithNullEmail() throws ServletException, IOException {
-        when(jwtUtil.getTokenFromCookie(request)).thenReturn("invalidToken");
+        when(jwtUtil.getAuthToken(request)).thenReturn("invalidToken");
         when(jwtUtil.extractUserEmail("invalidToken")).thenReturn(null);
 
         request.setRequestURI("/payment/create-checkout");

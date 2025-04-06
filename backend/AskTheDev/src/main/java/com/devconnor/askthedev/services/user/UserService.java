@@ -79,6 +79,13 @@ public class UserService {
         return atdUserResponse;
     }
 
+    public ATDUserResponse getATDUserResponseByUser(UserDTO user, String authToken) {
+        ATDUserResponse response = getATDUserResponseByUser(user);
+        response.setAuthToken(authToken);
+
+        return response;
+    }
+
     private static UserDTO mapToDTO(User user) {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());

@@ -1,7 +1,10 @@
 package com.devconnor.askthedev.security;
 
+import com.devconnor.askthedev.utils.EnvUtils;
+import com.devconnor.askthedev.utils.EnvironmentType;
 import jakarta.servlet.http.HttpServletMapping;
 import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -29,7 +32,7 @@ class CorsConfigurationSourceTest {
             "chrome-extension://lnnbjajgiifocmcfifoeccdilelmibdf"
     );
     private static final List<String> ALLOWED_METHODS = List.of(
-            "GET", "POST", "PUT", "DELETE"
+            "GET", "POST"
     );
 
     @Autowired
@@ -40,6 +43,11 @@ class CorsConfigurationSourceTest {
 
     @Mock
     private HttpServletMapping mapping;
+
+    @BeforeAll
+    static void setUp() {
+        EnvUtils.loadDotEnv(EnvironmentType.LOCAL);
+    }
 
     @Test
     void testCorsConfigurationSource() {
@@ -60,9 +68,5 @@ class CorsConfigurationSourceTest {
         List<String> allowedMethods = config.getAllowedMethods();
         assertNotNull(allowedMethods);
         assertTrue(allowedMethods.containsAll(ALLOWED_METHODS));
-
-        Boolean allowCredentials = config.getAllowCredentials();
-        assertNotNull(allowCredentials);
-        assertTrue(allowCredentials);
     }
 }

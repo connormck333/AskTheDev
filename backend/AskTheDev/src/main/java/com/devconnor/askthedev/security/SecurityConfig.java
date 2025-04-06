@@ -65,11 +65,11 @@ public class SecurityConfig {
                 "http://localhost:5173",
                 "chrome-extension://lnnbjajgiifocmcfifoeccdilelmibdf"
         ));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowedMethods(List.of("GET", "POST"));
         configuration.setAllowedHeaders(List.of(
                 "Content-Type",
-                "Accept"
+                "Accept",
+                "Authorization"
         ));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -51,7 +51,7 @@ class AuthenticationControllerTest {
     void testRegister_WithValidEmailAndPassword() throws Exception {
         UUID userId = UUID.randomUUID();
         ATDUserResponse userResponse = generateUserResponse(userId);
-        when(authenticationService.register(any(HttpServletResponse.class), eq(EMAIL), eq(PASSWORD))).thenReturn(userResponse);
+        when(authenticationService.register(EMAIL, PASSWORD)).thenReturn(userResponse);
 
         String body = generateUserAuthRequest();
 
@@ -87,7 +87,7 @@ class AuthenticationControllerTest {
         UUID userId = UUID.randomUUID();
         ATDUserResponse userResponse = generateUserResponse(userId);
 
-        when(authenticationService.login(any(HttpServletResponse.class), eq(EMAIL), eq(PASSWORD))).thenReturn(userResponse);
+        when(authenticationService.login(EMAIL, PASSWORD)).thenReturn(userResponse);
 
         String userAuthRequest = generateUserAuthRequest();
 

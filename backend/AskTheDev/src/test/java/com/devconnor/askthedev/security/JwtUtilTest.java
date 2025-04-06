@@ -7,24 +7,21 @@ import com.devconnor.askthedev.utils.EnvironmentType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import jakarta.servlet.http.Cookie;
+import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
 
 import java.security.Key;
 import java.util.Date;
 
 import static com.devconnor.askthedev.utils.Utils.createRefreshToken;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,9 +34,6 @@ class JwtUtilTest {
 
     @Mock
     private HttpServletRequest request;
-
-    @Mock
-    private HttpServletResponse response;
 
     private static final String TEST_EMAIL = "test@gmail.com";
 
@@ -91,11 +85,9 @@ class JwtUtilTest {
     @Test
     void testIsSessionValid_Successful() {
         String jwtToken = jwtUtil.generateJwtToken(TEST_EMAIL);
-        Cookie jwtCookie = new Cookie("jwtToken", jwtToken);
-
         RefreshToken refreshToken = createRefreshToken();
 
-        when(request.getCookies()).thenReturn(new Cookie[]{jwtCookie});
+        when(request.getHeader("Authorization")).thenReturn(jwtToken);
         when(refreshTokenRepository.findByToken(jwtToken)).thenReturn(refreshToken);
 
         boolean isSessionValid = jwtUtil.isSessionValid(request, TEST_EMAIL);
@@ -106,9 +98,8 @@ class JwtUtilTest {
     @Test
     void testIsSessionValid_WithInvalidToken() {
         String token = "invalidToken";
-        Cookie cookie = new Cookie("jwtToken", token);
 
-        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+        when(request.getHeader("Authorization")).thenReturn(token);
 
         boolean isSessionValid = jwtUtil.isSessionValid(request, TEST_EMAIL);
 
@@ -118,9 +109,10 @@ class JwtUtilTest {
     @Test
     void testIsSessionValid_WithInvalidEmail() {
         String token = jwtUtil.generateJwtToken(TEST_EMAIL);
-        Cookie cookie = new Cookie("jwtToken", token);
+        RefreshToken refreshToken = createRefreshToken();
 
-        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+        when(request.getHeader("Authorization")).thenReturn(token);
+        when(refreshTokenRepository.findByToken(token)).thenReturn(refreshToken);
 
         boolean isSessionValid = jwtUtil.isSessionValid(request, "invalidEmail");
 
@@ -131,10 +123,16 @@ class JwtUtilTest {
     void testIsSessionValid_WithExpiredToken() {
         Date invalidDate = new Date();
         invalidDate.setTime(invalidDate.getTime() - (1000 * 60 * 60 * 24 * 5));
-        String token = jwtUtil.generateJwtToken(TEST_EMAIL, invalidDate);
-        Cookie cookie = new Cookie("jwtToken", token);
+        String token = Jwts.builder()
+                .setSubject(TEST_EMAIL)
+                .setIssuedAt(invalidDate)
+                .setExpiration(new Date(invalidDate.getTime() - 100))
+                .signWith(SignatureAlgorithm.HS256, jwtUtil.getSecret())
+                .compact();
+        RefreshToken refreshToken = createRefreshToken();
 
-        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+        when(request.getHeader("Authorization")).thenReturn(token);
+        when(refreshTokenRepository.findByToken(token)).thenReturn(refreshToken);
 
         boolean isSessionValid = jwtUtil.isSessionValid(request, TEST_EMAIL);
 
@@ -142,8 +140,8 @@ class JwtUtilTest {
     }
 
     @Test
-    void testIsSessionValid_WithEmptyCookies() {
-        when(request.getCookies()).thenReturn(null);
+    void testIsSessionValid_AuthorizationHeaderEmpty() {
+        when(request.getHeader("Authorization")).thenReturn(null);
 
         boolean isSessionValid = jwtUtil.isSessionValid(request, "invalidEmail");
 
@@ -151,50 +149,14 @@ class JwtUtilTest {
     }
 
     @Test
-    void testSaveHttpCookies_Successful() {
-        jwtUtil.saveHttpCookies(response, TEST_EMAIL);
-
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        verify(response).addHeader(eq(HttpHeaders.SET_COOKIE), captor.capture());
-
-        String cookie = captor.getValue();
-
-        assertNotNull(cookie);
-        assertTrue(cookie.contains("jwtToken="));
-        assertTrue(cookie.contains("HttpOnly"));
-    }
-
-    @Test
-    void testGetTokenFromCookie_Successful() {
+    void testGetAuthToken_Successful() {
         String token = jwtUtil.generateJwtToken(TEST_EMAIL);
-        Cookie cookie = new Cookie("jwtToken", token);
 
-        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
+        when(request.getHeader("Authorization")).thenReturn(token);
 
-        String retrievedToken = jwtUtil.getTokenFromCookie(request);
+        String retrievedToken = jwtUtil.getAuthToken(request);
 
         assertNotNull(retrievedToken);
         assertEquals(token, retrievedToken);
-    }
-
-    @Test
-    void testGetTokenFromCookie_WithEmptyCookies() {
-        when(request.getCookies()).thenReturn(null);
-
-        String retrievedToken = jwtUtil.getTokenFromCookie(request);
-
-        assertNull(retrievedToken);
-    }
-
-    @Test
-    void testGetTokenFromCookie_WithMissingCookie() {
-        String token = jwtUtil.generateJwtToken(TEST_EMAIL);
-        Cookie cookie = new Cookie("differentToken", token);
-
-        when(request.getCookies()).thenReturn(new Cookie[]{cookie});
-
-        String retrievedToken = jwtUtil.getTokenFromCookie(request);
-
-        assertNull(retrievedToken);
     }
 }

@@ -130,7 +130,7 @@ class UserControllerTest {
         atdUserResponse.setActiveSubscription(true);
         atdUserResponse.setSubscriptionType(SubscriptionType.BASIC);
 
-        when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
+        when(jwtUtil.getAuthToken(any(HttpServletRequest.class))).thenReturn(token);
         when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
         when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
         when(userService.getATDUserResponseByUser(user)).thenReturn(atdUserResponse);
@@ -153,7 +153,7 @@ class UserControllerTest {
         UserDTO user = createUserDTO(userId);
         ATDUserResponse atdUserResponse = generateUserResponse(userId);
 
-        when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
+        when(jwtUtil.getAuthToken(any(HttpServletRequest.class))).thenReturn(token);
         when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
         when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
         when(userService.getATDUserResponseByUser(user)).thenReturn(atdUserResponse);
@@ -177,7 +177,7 @@ class UserControllerTest {
         ATDUserResponse atdUserResponse = generateUserResponse(userId);
         atdUserResponse.setSubscriptionType(SubscriptionType.BASIC);
 
-        when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
+        when(jwtUtil.getAuthToken(any(HttpServletRequest.class))).thenReturn(token);
         when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
         when(userService.getUserByEmail(user.getEmail())).thenReturn(user);
         when(userService.getATDUserResponseByUser(user)).thenReturn(atdUserResponse);
@@ -207,7 +207,7 @@ class UserControllerTest {
         UUID userId = UUID.randomUUID();
         UserDTO user = createUserDTO(userId);
 
-        when(jwtUtil.getTokenFromCookie(any(HttpServletRequest.class))).thenReturn(token);
+        when(jwtUtil.getAuthToken(any(HttpServletRequest.class))).thenReturn(token);
         when(jwtUtil.extractUserEmail(token)).thenReturn(user.getEmail());
         when(userService.getUserByEmail(user.getEmail())).thenReturn(null);
 

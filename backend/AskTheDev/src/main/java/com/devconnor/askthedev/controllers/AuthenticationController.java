@@ -22,7 +22,7 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<ATDUserResponse> login(HttpServletResponse response, @RequestBody UserAuthRequest userAuthRequest) {
-        ATDUserResponse atdResponse = authenticationService.login(response, userAuthRequest.getEmail(), userAuthRequest.getPassword());
+        ATDUserResponse atdResponse = authenticationService.login(userAuthRequest.getEmail(), userAuthRequest.getPassword());
         if (atdResponse != null && atdResponse.getEmail() != null) {
             return ResponseEntity.ok(atdResponse);
         }
@@ -35,7 +35,7 @@ public class AuthenticationController {
         if (!userAuthRequest.isTermsAccepted()) {
             throw new TermsNotAcceptedException();
         }
-        ATDUserResponse userResponse = authenticationService.register(response, userAuthRequest.getEmail(), userAuthRequest.getPassword());
+        ATDUserResponse userResponse = authenticationService.register(userAuthRequest.getEmail(), userAuthRequest.getPassword());
         return new ResponseEntity<>(userResponse, HttpStatus.CREATED);
     }
 

@@ -59,7 +59,7 @@ public class UserController {
             HttpServletRequest request
     ) {
         ATDUserResponse atdUserResponse = new ATDUserResponse();
-        String token = jwtUtil.getTokenFromCookie(request);
+        String token = jwtUtil.getAuthToken(request);
         if (token == null) {
             atdUserResponse.setMessage(USER_NOT_FOUND);
             return new ResponseEntity<>(atdUserResponse, HttpStatus.NOT_FOUND);

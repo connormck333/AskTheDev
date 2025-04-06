@@ -37,22 +37,22 @@ public class AuthenticationService {
     private final JwtUtil jwtUtil;
     private final UserService userService;
 
-    public ATDUserResponse login(HttpServletResponse response, String email, String password) {
+    public ATDUserResponse login(String email, String password) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
-            jwtUtil.saveHttpCookies(response, email);
+            String jwtToken = jwtUtil.createJwtToken(email);
 
             UserDTO user = userService.getUserByEmail(email);
-            return userService.getATDUserResponseByUser(user);
+            return userService.getATDUserResponseByUser(user, jwtToken);
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid email or password");
         }
     }
 
-    public ATDUserResponse register(HttpServletResponse response, String email, String password) {
+    public ATDUserResponse register(String email, String password) {
         if (userRepository.existsUserByEmail(email)) {
             throw new ExistingUsernameException();
         }
@@ -67,11 +67,12 @@ public class AuthenticationService {
 
         User savedUser = userRepository.save(user);
 
-        jwtUtil.saveHttpCookies(response, email);
+        String jwtToken = jwtUtil.createJwtToken(email);
 
         ATDUserResponse atdUserResponse = new ATDUserResponse();
         atdUserResponse.setUserId(savedUser.getId());
         atdUserResponse.setEmail(savedUser.getEmail());
+        atdUserResponse.setAuthToken(jwtToken);
         atdUserResponse.setMessage("User registered successfully.");
 
         return atdUserResponse;
@@ -83,7 +84,7 @@ public class AuthenticationService {
         if (auth != null && auth.isAuthenticated()) {
              new SecurityContextLogoutHandler().logout(request, response, auth);
 
-             String token = jwtUtil.getTokenFromCookie(request);
+             String token = jwtUtil.getAuthToken(request);
              if (token == null) {
                  throw new InvalidSessionException();
              }

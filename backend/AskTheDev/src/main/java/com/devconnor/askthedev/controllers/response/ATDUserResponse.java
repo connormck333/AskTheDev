@@ -12,6 +12,7 @@ import java.util.UUID;
 public class ATDUserResponse extends ATDResponse {
     private String email;
     private UUID userId;
+    private String authToken;
 
     private boolean activeSubscription;
     private SubscriptionType subscriptionType;

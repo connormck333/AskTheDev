@@ -16,7 +16,7 @@ public class Constants {
     public static final String PROMPT_NOT_FOUND = "Prompt Not Found";
     public static final String USER_NOT_FOUND = "User Not Found";
 
-    public static final long COOKIE_EXPIRATION_TIME = (long) 1000 * 60 * 60 * 24 * 7;
+    public static final long AUTH_EXPIRATION_TIME = (long) 1000 * 60 * 60 * 24 * 7;
 
     public static final List<Character> SPECIAL_CHARACTERS = List.of('!', '@', '£', '#', '$', '%', '^', '&', '*', '-');
 }

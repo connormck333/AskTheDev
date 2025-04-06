@@ -95,10 +95,9 @@ class AuthenticationServiceTest {
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(mockedAuthentication);
-        doNothing().when(jwtUtil).saveHttpCookies(response, EMAIL);
-        when(userService.getATDUserResponseByUser(any())).thenReturn(atdUserResponse);
+        when(userService.getATDUserResponseByUser(any(), any())).thenReturn(atdUserResponse);
 
-        ATDUserResponse atdResponse = authenticationService.login(response, EMAIL, PASSWORD);
+        ATDUserResponse atdResponse = authenticationService.login(EMAIL, PASSWORD);
 
         assertNotNull(atdResponse);
     }
@@ -108,7 +107,7 @@ class AuthenticationServiceTest {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(BadCredentialsException.class);
 
-        assertThrows(BadCredentialsException.class, () -> authenticationService.login(response, EMAIL, PASSWORD));
+        assertThrows(BadCredentialsException.class, () -> authenticationService.login(EMAIL, PASSWORD));
     }
 
     @Test
@@ -119,9 +118,8 @@ class AuthenticationServiceTest {
         when(userRepository.existsUserByEmail(EMAIL)).thenReturn(false);
         when(passwordEncoder.encode(PASSWORD)).thenReturn(ENCODED_PASSWORD);
         when(userRepository.save(any())).thenReturn(user);
-        doNothing().when(jwtUtil).saveHttpCookies(response, EMAIL);
 
-        ATDUserResponse atdUserResponse = authenticationService.register(response, EMAIL, PASSWORD);
+        ATDUserResponse atdUserResponse = authenticationService.register(EMAIL, PASSWORD);
 
         assertNotNull(atdUserResponse);
         assertEquals(EMAIL, atdUserResponse.getEmail());
@@ -135,7 +133,7 @@ class AuthenticationServiceTest {
 
         when(userRepository.existsUserByEmail(email)).thenReturn(false);
 
-        assertThrows(BadCredentialsException.class, () -> authenticationService.register(response, email, PASSWORD));
+        assertThrows(BadCredentialsException.class, () -> authenticationService.register(email, PASSWORD));
     }
 
     @Test
@@ -144,14 +142,14 @@ class AuthenticationServiceTest {
 
         when(userRepository.existsUserByEmail(EMAIL)).thenReturn(false);
 
-        assertThrows(BadCredentialsException.class, () -> authenticationService.register(response, EMAIL, password));
+        assertThrows(BadCredentialsException.class, () -> authenticationService.register(EMAIL, password));
     }
 
     @Test
     void testRegister_ExistingUsername() {
         when(userRepository.existsUserByEmail(EMAIL)).thenReturn(true);
 
-        assertThrows(ExistingUsernameException.class, () -> authenticationService.register(response, EMAIL, PASSWORD));
+        assertThrows(ExistingUsernameException.class, () -> authenticationService.register(EMAIL, PASSWORD));
     }
 
     @Test
@@ -160,7 +158,7 @@ class AuthenticationServiceTest {
 
         when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
         when(mockedAuthentication.isAuthenticated()).thenReturn(true);
-        when(jwtUtil.getTokenFromCookie(request)).thenReturn(SESSION_TOKEN);
+        when(jwtUtil.getAuthToken(request)).thenReturn(SESSION_TOKEN);
         when(refreshTokenRepository.findByToken(SESSION_TOKEN)).thenReturn(refreshToken);
 
         assertDoesNotThrow(() -> authenticationService.logout(request, response));
@@ -185,7 +183,7 @@ class AuthenticationServiceTest {
     void testLogout_WhenRequestSentWithoutToken() {
         when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
         when(mockedAuthentication.isAuthenticated()).thenReturn(true);
-        when(jwtUtil.getTokenFromCookie(request)).thenReturn(null);
+        when(jwtUtil.getAuthToken(request)).thenReturn(null);
 
         assertThrows(InvalidSessionException.class, () -> authenticationService.logout(request, response));
     }
@@ -194,7 +192,7 @@ class AuthenticationServiceTest {
     void testLogout_WhenRefreshTokenDoesNotExist() {
         when(mockedSecurityContext.getAuthentication()).thenReturn(mockedAuthentication);
         when(mockedAuthentication.isAuthenticated()).thenReturn(true);
-        when(jwtUtil.getTokenFromCookie(request)).thenReturn(SESSION_TOKEN);
+        when(jwtUtil.getAuthToken(request)).thenReturn(SESSION_TOKEN);
         when(refreshTokenRepository.findByToken(SESSION_TOKEN)).thenReturn(null);
 
         assertThrows(InvalidSessionException.class, () -> authenticationService.logout(request, response));
