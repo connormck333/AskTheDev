@@ -146,7 +146,7 @@ public class StripeService {
                 .build();
         ConfigurationCreateParams.Features.SubscriptionCancel cancelSubscription = ConfigurationCreateParams.Features.SubscriptionCancel.builder()
                 .setEnabled(true)
-                .setMode(ConfigurationCreateParams.Features.SubscriptionCancel.Mode.IMMEDIATELY)
+                .setMode(ConfigurationCreateParams.Features.SubscriptionCancel.Mode.AT_PERIOD_END)
                 .build();
         ConfigurationCreateParams.Features.PaymentMethodUpdate paymentMethodUpdate = ConfigurationCreateParams.Features.PaymentMethodUpdate.builder()
                 .setEnabled(true)
