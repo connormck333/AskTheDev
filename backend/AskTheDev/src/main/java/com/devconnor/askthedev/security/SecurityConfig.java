@@ -63,7 +63,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "chrome-extension://lnnbjajgiifocmcfifoeccdilelmibdf"
+                "chrome-extension://lnnbjajgiifocmcfifoeccdilelmibdf",
+                "chrome-extension://bkmajbngdhjdcfebblcdedacoblgldmk"
         ));
         configuration.setAllowedMethods(List.of("GET", "POST"));
         configuration.setAllowedHeaders(List.of(

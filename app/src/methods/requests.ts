@@ -1,12 +1,11 @@
 import { GetParam, Status } from "../utils/interfaces";
 
-const URL: string = "http://localhost:8080";
-// const URL: string = "https://www.api.askthedev.io"
+// const URL: string = "http://localhost:8080";
+const URL: string = "https://www.api.askthedev.io"
 
 async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
     try {
         const authToken: string = await getAuthToken();
-        console.log(authToken);
         const response = await fetch(URL + endpoint, {
             method: 'POST',
             headers: {
@@ -37,7 +36,6 @@ async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
 async function sendGetRequest(endpoint: string, params: GetParam[]): Promise<Status> {
     try {
         const authToken: string = await getAuthToken();
-        console.log(authToken);
         const response = await fetch(URL + endpoint + formatParams(params), {
             method: 'GET',
             headers: {
