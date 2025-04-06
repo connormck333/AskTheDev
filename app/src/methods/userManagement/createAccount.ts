@@ -1,5 +1,6 @@
 import { Status } from "../../utils/interfaces";
 import { sendPostRequest } from "../requests";
+import { saveAuthToken } from "./saveAuthToken";
 
 interface CreateAccountBody {
     email: string;
@@ -13,7 +14,13 @@ async function createAccount(email: string, password: string): Promise<Status> {
         password: password,
         termsAccepted: true
     }
-    return await sendPostRequest("/auth/signup", body);
+
+    const response: Status = await sendPostRequest("/auth/signup", body);
+    if (!response.success) return response;
+
+    await saveAuthToken(response.data.authToken);
+
+    return response;
 }
 
 export {

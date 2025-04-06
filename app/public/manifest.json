@@ -2,11 +2,16 @@
     "manifest_version": 3,
     "name": "Ask The Dev",
     "version": "1.0.0",
-    "description": "AI Chrome Extension - Ask AI questions about the webpage you are on.",
+    "description": "Providing instant, context-aware AI assistance simplifying documentation & accelerating problem-solving.",
     "action": {
       "default_popup": "index.html",
-      "default_icon": "icon.png"
+      "default_icon": "icons/icon128.png"
     },
-    "permissions": ["scripting", "activeTab", "tabs", "cookies", "http://localhost:5173", "https://api.askthedev.io"],
-    "host_permissions": ["<all_urls>"]
+    "permissions": ["scripting", "activeTab", "storage"],
+    "icons": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
 }

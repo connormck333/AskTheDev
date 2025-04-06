@@ -5,10 +5,12 @@ const URL: string = "http://localhost:8080";
 
 async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
     try {
+        const authToken: string = await getAuthToken();
+        console.log(authToken);
         const response = await fetch(URL + endpoint, {
             method: 'POST',
-            credentials: "include",
             headers: {
+                'Authorization': `Bearer ${authToken}`,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
@@ -34,10 +36,12 @@ async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
 
 async function sendGetRequest(endpoint: string, params: GetParam[]): Promise<Status> {
     try {
+        const authToken: string = await getAuthToken();
+        console.log(authToken);
         const response = await fetch(URL + endpoint + formatParams(params), {
             method: 'GET',
-            credentials: "include",
             headers: {
+                'Authorization': `Bearer ${authToken}`,
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
@@ -57,6 +61,15 @@ async function sendGetRequest(endpoint: string, params: GetParam[]): Promise<Sta
     } catch (error: any) {
         console.log(error)
         return { success: false };
+    }
+}
+
+async function getAuthToken(): Promise<string> {
+    try {
+        return (await chrome.storage.local.get("atdAuth")).atdAuth;
+    } catch (err) {
+        console.log(err);
+        return "";
     }
 }
 

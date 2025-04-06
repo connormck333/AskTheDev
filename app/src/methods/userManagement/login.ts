@@ -1,6 +1,7 @@
 import { Status } from "../../utils/interfaces";
 import SubscriptionType from "../../utils/SubscriptionType";
 import { sendPostRequest } from "../requests";
+import { saveAuthToken } from "./saveAuthToken";
 
 async function login(email: string, password: string): Promise<Status> {
     const response: Status = await sendPostRequest("/auth/login", {
@@ -16,6 +17,8 @@ async function login(email: string, password: string): Promise<Status> {
     } else if (data.subscriptionType === "PRO") {
         response.data.subscriptionType = SubscriptionType.PRO;
     }
+
+    await saveAuthToken(response.data.authToken);
 
     return response;
 }
