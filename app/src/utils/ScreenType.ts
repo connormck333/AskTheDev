@@ -1,5 +1,5 @@
 enum ScreenType {
-    REGISTER, LOGIN
+    REGISTER, LOGIN, SUBSCRIPTION
 };
 
 export default ScreenType;

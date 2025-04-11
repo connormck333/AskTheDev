@@ -1,9 +1,8 @@
 package com.devconnor.askthedev.services.payments;
 
-import com.devconnor.askthedev.exception.ATDException;
-import com.devconnor.askthedev.exception.CustomerNotFoundException;
-import com.devconnor.askthedev.exception.InvalidEventException;
-import com.devconnor.askthedev.exception.UserNotFoundException;
+import com.devconnor.askthedev.controllers.response.ATDUserResponse;
+import com.devconnor.askthedev.exception.*;
+import com.devconnor.askthedev.models.ATDSubscription;
 import com.devconnor.askthedev.models.User;
 import com.devconnor.askthedev.repositories.UserRepository;
 import com.devconnor.askthedev.services.user.UserService;
@@ -57,9 +56,20 @@ public class StripeService {
         }
     }
 
+    public ATDUserResponse createFreeAccount(UUID userId) {
+        if (userId == null) {
+            throw new UserNotFoundException();
+        }
+        return eventManager.createFreeAccount(userId);
+    }
+
     public String createCheckoutSession(SubscriptionType subscriptionType, UUID userId) {
         Customer customer = getCustomer(userId, true);
-        String priceId = subscriptionType.getValue();
+        String priceId = subscriptionType.getPriceId();
+
+        if (subscriptionType == SubscriptionType.FREE) {
+            throw new InvalidSubscriptionException();
+        }
 
         try {
             SessionCreateParams params = SessionCreateParams.builder()
@@ -174,10 +184,10 @@ public class StripeService {
 
     private List<Product> createProductList() {
         List<Product> subscriptions = new ArrayList<>();
-        for (SubscriptionType subscriptionType : SubscriptionType.values()) {
+        for (SubscriptionType subscriptionType : SubscriptionType.getSubscriptionTypes()) {
             Product product = Product.builder()
-                    .setProduct(SubscriptionType.getProductId(subscriptionType))
-                    .addPrice(subscriptionType.getValue())
+                    .setProduct(subscriptionType.getProductId())
+                    .addPrice(subscriptionType.getPriceId())
                     .build();
             subscriptions.add(product);
         }

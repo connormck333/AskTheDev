@@ -21,7 +21,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
-    public ResponseEntity<ATDUserResponse> login(HttpServletResponse response, @RequestBody UserAuthRequest userAuthRequest) {
+    public ResponseEntity<ATDUserResponse> login(@RequestBody UserAuthRequest userAuthRequest) {
         ATDUserResponse atdResponse = authenticationService.login(userAuthRequest.getEmail(), userAuthRequest.getPassword());
         if (atdResponse != null && atdResponse.getEmail() != null) {
             return ResponseEntity.ok(atdResponse);
@@ -31,7 +31,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<ATDUserResponse> registerUser(HttpServletResponse response, @RequestBody UserAuthRequest userAuthRequest) {
+    public ResponseEntity<ATDUserResponse> registerUser(@RequestBody UserAuthRequest userAuthRequest) {
         if (!userAuthRequest.isTermsAccepted()) {
             throw new TermsNotAcceptedException();
         }

@@ -193,7 +193,7 @@ class EventManagerTest {
 
         eventManager.handleSubscriptionDeleted(mockedEvent);
 
-        verify(subscriptionRepository, times(1)).deleteByStripeSubscriptionId(SUBSCRIPTION_ID);
+        verify(subscriptionRepository, times(1)).save(any());
     }
 
     @Test
@@ -354,7 +354,7 @@ class EventManagerTest {
 
         Price price = new Price();
         price.setCurrency("GBP");
-        price.setId(SubscriptionType.BASIC.getValue());
+        price.setId(SubscriptionType.BASIC.getPriceId());
 
         SubscriptionItem subscriptionItem = new SubscriptionItem();
         subscriptionItem.setPrice(price);

@@ -1,9 +1,10 @@
 import { Status } from "../../utils/interfaces";
 import { deriveSubscriptionType } from "../../utils/utils";
-import { sendGetRequest } from "../requests";
+import { sendPostRequest } from "../requests";
 
-async function getCurrentUser(): Promise<Status> {
-    const response: Status = await sendGetRequest("/user/current-user", []);
+async function subscribeFreeAccount(userId: string): Promise<Status> {
+    console.log(userId);
+    const response: Status = await sendPostRequest("/payment/register-free-account", {userId: userId});
     if (!response.success) return response;
 
     response.data.subscriptionType = deriveSubscriptionType(response.data.subscriptionType);
@@ -12,5 +13,5 @@ async function getCurrentUser(): Promise<Status> {
 }
 
 export {
-    getCurrentUser
+    subscribeFreeAccount
 }

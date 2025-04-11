@@ -9,13 +9,14 @@ import { getPreviousPromptsByPage } from "../methods/prompts/getPreviousPrompts"
 import FloatingAccountButton from "../components/FloatingButton";
 
 interface PromptScreenProps {
-    user: User;
+    user: User | undefined;
     setSignedIn: Function;
+    setScreen: Function;
 }
 
 export default function PromptScreen(props: PromptScreenProps): ReactElement {
 
-    const { user, setSignedIn } = props;
+    const { user, setSignedIn, setScreen } = props;
     const [chatStream, setChatStream] = useState<Chat[]>([{
         message: `
 ### Welcome to AskTheDev!
@@ -33,6 +34,8 @@ Please ask me anything, I am already caught up with your current webpage!
     }, []);
 
     async function getPreviousPrompts(): Promise<void> {
+        if (user === undefined) return;
+
         const response: Status = await getPreviousPromptsByPage(user.userId, 0);
         if (!response.success) {
             const chats: Chat[] = [...chatStream, {
@@ -93,13 +96,18 @@ Please ask me anything, I am already caught up with your current webpage!
                         prompt={[prompt, setPrompt]}
                         loading={[loading, setLoading]}
                         chatStream={[chatStream, setChatStream]}
+                        setScreen={setScreen}
                     />
                 </>
             </ScrollContainerContext.Provider>
-            <FloatingAccountButton
-                userId={user.userId}
-                setSignedIn={setSignedIn}
-            />
+
+            { user !== undefined &&
+                <FloatingAccountButton
+                    user={user}
+                    setSignedIn={setSignedIn}
+                    setScreen={setScreen}
+                />
+            }
         </div>
     );
 }

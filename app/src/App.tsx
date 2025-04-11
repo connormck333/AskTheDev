@@ -8,12 +8,13 @@ import SubscriptionScreen from './screens/SubscriptionScreen';
 import LoginScreen from './screens/LoginScreen';
 import ScreenType from './utils/ScreenType';
 import LoadingScreen from './screens/LoadingScreen';
+import SubscriptionType from './utils/SubscriptionType';
 
 function App(): ReactElement {
 
     const [signedIn, setSignedIn] = useState<boolean | undefined>(undefined);
     const [signedInUser, setSignedInUser] = useState<User | undefined>(undefined);
-    const [currentScreen, setCurrentScreen] = useState<ScreenType>(ScreenType.LOGIN);
+    const [currentScreen, setCurrentScreen] = useState<ScreenType | undefined>(undefined);
 
     useEffect(() => {
         retrieveUserDetails();
@@ -26,6 +27,8 @@ function App(): ReactElement {
             return;
         }
 
+        console.log(response.data.subscriptionType === SubscriptionType.FREE);
+
         setSignedInUser(response.data);
         setSignedIn(true);
     }
@@ -36,19 +39,48 @@ function App(): ReactElement {
   
     return (
         <div className="items-center justify-center flex flex-col main-container min-h-[500px]">
-            { 
-                !signedIn
-                ? (currentScreen === ScreenType.LOGIN
-                    ? <LoginScreen setSignedIn={setSignedIn} setUser={setSignedInUser} setCurrentScreen={setCurrentScreen} />
-                    : <RegisterScreen setSignedIn={setSignedIn} setUser={setSignedInUser} setCurrentScreen={setCurrentScreen} />
-                )
-                : (signedInUser?.activeSubscription
-                    ? <PromptScreen setSignedIn={setSignedIn} user={signedInUser} />
-                    : <SubscriptionScreen setSignedIn={setSignedIn} user={signedInUser as User} />
-                )
-            }
+            <RenderScreen
+                signedIn={signedIn}
+                signedInUser={signedInUser}
+                currentScreen={currentScreen}
+                setSignedIn={setSignedIn}
+                setSignedInUser={setSignedInUser}
+                setCurrentScreen={setCurrentScreen}
+            />
         </div>
     );
+}
+
+interface RenderScreenProps {
+    signedIn: boolean;
+    signedInUser: User | undefined;
+    currentScreen: ScreenType | undefined;
+    setSignedIn: Function;
+    setSignedInUser: Function;
+    setCurrentScreen: Function;
+}
+
+function RenderScreen(props: RenderScreenProps) {
+
+    const { setSignedIn, setSignedInUser, setCurrentScreen } = props;
+
+    if (props.signedIn === undefined) {
+        return <LoadingScreen />;
+    }
+
+    if (props.currentScreen !== undefined) {
+        if (props.currentScreen === ScreenType.LOGIN) {
+            return <LoginScreen setSignedIn={setSignedIn} setUser={setSignedInUser} setCurrentScreen={setCurrentScreen} />;
+        } else if (props.currentScreen === ScreenType.REGISTER) {
+            return <RegisterScreen setSignedIn={setSignedIn} setUser={setSignedInUser} setCurrentScreen={setCurrentScreen} />;
+        }
+    }
+
+    if (props.signedInUser !== undefined && (props.signedInUser.subscriptionType === SubscriptionType.NONE || props.currentScreen === ScreenType.SUBSCRIPTION)) {
+        return <SubscriptionScreen setSignedIn={setSignedIn} user={props.signedInUser} setUser={setSignedInUser} setScreen={setCurrentScreen} />
+    }
+
+    return <PromptScreen setSignedIn={setSignedIn} user={props.signedInUser} setScreen={setCurrentScreen} />
 }
 
 export default App;
