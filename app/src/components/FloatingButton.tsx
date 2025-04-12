@@ -65,6 +65,7 @@ export default function FloatingAccountButton(props: FloatingButtonProps): React
         }
 
         setSignedIn(false);
+        setScreen(ScreenType.LOGIN);
     }
 
     async function createManageSubscriptionUrl(): Promise<void> {

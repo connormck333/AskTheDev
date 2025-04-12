@@ -1,5 +1,5 @@
 import { Status } from "../../utils/interfaces";
-import SubscriptionType from "../../utils/SubscriptionType";
+import { deriveSubscriptionType } from "../../utils/utils";
 import { sendPostRequest } from "../requests";
 import { saveAuthToken } from "./saveAuthToken";
 
@@ -8,16 +8,9 @@ async function login(email: string, password: string): Promise<Status> {
         email: email,
         password: password
     });
-
     if (!response.success) return response;
 
-    const data = response.data;
-    if (data.subscriptionType === "BASIC") {
-        response.data.subscriptionType = SubscriptionType.BASIC;
-    } else if (data.subscriptionType === "PRO") {
-        response.data.subscriptionType = SubscriptionType.PRO;
-    }
-
+    response.data.subscriptionType = deriveSubscriptionType(response.data.subscriptionType);
     await saveAuthToken(response.data.authToken);
 
     return response;

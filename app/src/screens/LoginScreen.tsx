@@ -41,6 +41,7 @@ export default function LoginScreen(props: LoginScreenProps): ReactElement {
 
         setUser({...response.data});
         setSignedIn(true);
+        setCurrentScreen(ScreenType.PROMPT);
     }
 
     function register(): void {

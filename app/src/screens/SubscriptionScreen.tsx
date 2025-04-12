@@ -6,6 +6,7 @@ import GradientButton from '../components/GradientButton';
 import { subscribeFreeAccount } from '../methods/payments/subscribeFreeAccount';
 import SubscriptionType from '../utils/SubscriptionType';
 import Button from '../components/Button';
+import ScreenType from '../utils/ScreenType';
 
 interface Tier {
     name: string;
@@ -118,6 +119,7 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
         }
 
         setUser(response.data);
+        setScreen(ScreenType.PROMPT);
     }
 
     async function logoutUser(): Promise<void> {
@@ -137,6 +139,7 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
         }
 
         setSignedIn(false);
+        setScreen(ScreenType.LOGIN);
     }
 
     function goBackToPromptScreen(): void {
@@ -185,13 +188,15 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
                     </div>
                 ))}
 
-                <div className="mt-6">
+                <div className="mt-6 flex flex-col">
                     {
                         user.subscriptionType === SubscriptionType.FREE &&
-                        <Button
-                            onClick={goBackToPromptScreen}
-                            label="Go Back"
-                        />
+                        <div className="mb-2">
+                            <Button
+                                onClick={goBackToPromptScreen}
+                                label="Go Back"
+                            />
+                        </div>
                     }
                     <GradientButton
                         onClick={logoutUser}

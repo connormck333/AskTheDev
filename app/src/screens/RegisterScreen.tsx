@@ -53,7 +53,7 @@ export default function RegisterScreen(props: RegisterScreenProps): ReactElement
 
         setUser(response.data);
         setSignedIn(true);
-        setCurrentScreen(undefined);
+        setCurrentScreen(ScreenType.SUBSCRIPTION);
     }
 
     function login(): void {
