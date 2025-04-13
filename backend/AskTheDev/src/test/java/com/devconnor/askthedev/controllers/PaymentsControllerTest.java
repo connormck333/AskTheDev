@@ -1,6 +1,8 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.request.PaymentRequest;
+import com.devconnor.askthedev.controllers.request.UserIDRequest;
+import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.exception.UserNotFoundException;
 import com.devconnor.askthedev.security.JwtUtil;
 import com.devconnor.askthedev.security.SecurityConfig;
@@ -23,8 +25,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.UUID;
 
-import static com.devconnor.askthedev.utils.Utils.APPLICATION_JSON;
-import static com.devconnor.askthedev.utils.Utils.convertToJson;
+import static com.devconnor.askthedev.utils.Utils.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -54,7 +55,7 @@ class PaymentsControllerTest {
     @Mock
     private Event event;
 
-    private static final String URL = "https://askthedev.com";
+    private static final String URL = "https://askthedev.io";
     private static final String STRIPE_SIGNATURE = "stripeSignature";
     private static final String STRIPE_PAYLOAD = "{ \"type\": \"payment_intent.succeeded\", \"data\": {\"object\": {}} }";
 
@@ -162,11 +163,57 @@ class PaymentsControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    @WithMockUser
+    void testRegisterFreeAccount_Success() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UserIDRequest userIDRequest = createUserIDRequest(userId);
+        ATDUserResponse response = generateUserResponse(userId);
+        String body = convertToJson(userIDRequest);
+
+        when(stripeService.createFreeAccount(any())).thenReturn(response);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/payment/register-free-account")
+                        .contentType(APPLICATION_JSON)
+                        .content(body)
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testRegisterFreeAccount_NotLoggedIn() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UserIDRequest userIDRequest = createUserIDRequest(userId);
+        String body = convertToJson(userIDRequest);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/payment/register-free-account")
+                        .contentType(APPLICATION_JSON)
+                        .content(body)
+                )
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser
+    void testRegisterFreeAccount_NoUserId() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/payment/register-free-account")
+                        .contentType(APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest());
+    }
+
     private static PaymentRequest createPaymentRequest() {
         PaymentRequest paymentRequest = new PaymentRequest();
         paymentRequest.setUserId(UUID.randomUUID());
         paymentRequest.setSubscriptionType(SubscriptionType.BASIC);
 
         return paymentRequest;
+    }
+
+    private static UserIDRequest createUserIDRequest(UUID userId) {
+        UserIDRequest userIDRequest = new UserIDRequest();
+        userIDRequest.setUserId(userId);
+
+        return userIDRequest;
     }
 }

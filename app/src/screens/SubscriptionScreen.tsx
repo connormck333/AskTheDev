@@ -24,7 +24,7 @@ const tiers: Tier[] = [
         priceMonthly: '£0.00',
         description: "Test it out before you purchase!",
         features: [
-            "3 prompts / day",
+            "3 prompts /day",
             "Access to GPT-4o mini",
             "Save previous responses",
             "Use on any site"

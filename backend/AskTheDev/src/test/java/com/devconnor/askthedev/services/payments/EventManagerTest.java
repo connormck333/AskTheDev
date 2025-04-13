@@ -1,5 +1,7 @@
 package com.devconnor.askthedev.services.payments;
 
+import com.devconnor.askthedev.controllers.response.ATDUserResponse;
+import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
 import com.devconnor.askthedev.exception.InvalidEventException;
 import com.devconnor.askthedev.exception.SubscriptionNotFoundException;
@@ -344,6 +346,35 @@ class EventManagerTest {
         mockedSubscription.when(() -> Subscription.retrieve(SUBSCRIPTION_ID)).thenReturn(null);
 
         assertThrows(SubscriptionNotFoundException.class, () -> eventManager.handleFailedPayment(mockedEvent));
+    }
+
+    @Test
+    void testCreateFreeAccount_Successful() {
+        UUID userId = UUID.randomUUID();
+        ATDUserResponse expectedResponse = generateUserResponse(userId);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(null);
+        when(userService.getATDUserResponseByUser(userId)).thenReturn(expectedResponse);
+
+        ATDUserResponse actualResponse = eventManager.createFreeAccount(userId);
+
+        verify(subscriptionRepository, times(1)).save(any(ATDSubscription.class));
+
+        assertEquals("email@askthedev.com", actualResponse.getEmail());
+        assertEquals(userId, actualResponse.getUserId());
+        assertFalse(actualResponse.isActiveSubscription());
+    }
+
+    @Test
+    void testCreateFreeAccount_ExistingSubscription() {
+        UUID userId = UUID.randomUUID();
+        ATDSubscription atdSubscription = createATDSubscription(userId);
+
+        when(subscriptionRepository.getSubscriptionByUserId(userId)).thenReturn(atdSubscription);
+
+        ATDException exception = assertThrows(ATDException.class, () -> eventManager.createFreeAccount(userId));
+
+        assertEquals("[ATD] ERROR: User already has a subscription.", exception.getMessage());
     }
 
     private static Subscription createSubscription() {

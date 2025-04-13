@@ -1,7 +1,7 @@
 import { GetParam, Status } from "../utils/interfaces";
 
-const URL: string = "http://localhost:8080";
-// const URL: string = "https://www.api.askthedev.io"
+// const URL: string = "http://localhost:8080";
+const URL: string = "https://www.api.askthedev.io"
 
 async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
     try {

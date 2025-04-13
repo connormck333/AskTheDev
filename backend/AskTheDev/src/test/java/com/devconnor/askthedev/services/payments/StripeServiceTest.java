@@ -1,5 +1,6 @@
 package com.devconnor.askthedev.services.payments;
 
+import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
 import com.devconnor.askthedev.exception.InvalidEventException;
@@ -266,5 +267,24 @@ class StripeServiceTest {
         ).thenThrow(ATDException.class);
 
         assertThrows(ATDException.class, () -> stripeService.createBillingPortalSession(userId));
+    }
+
+    @Test
+    void testCreateFreeAccount_Successful() {
+        UUID userId = UUID.randomUUID();
+        ATDUserResponse expectedResponse = generateUserResponse(userId);
+
+        when(eventManager.createFreeAccount(userId)).thenReturn(expectedResponse);
+
+        ATDUserResponse actualResponse = stripeService.createFreeAccount(userId);
+
+        assertEquals("email@askthedev.com", actualResponse.getEmail());
+        assertEquals(userId, actualResponse.getUserId());
+        assertFalse(actualResponse.isActiveSubscription());
+    }
+
+    @Test
+    void testCreateFreeAccount_UserIdNull() {
+        assertThrows(UserNotFoundException.class, () -> stripeService.createFreeAccount(null));
     }
 }
