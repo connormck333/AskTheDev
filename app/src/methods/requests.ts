@@ -28,7 +28,6 @@ async function sendPostRequest(endpoint: string, body: any): Promise<Status> {
         return { success: true, data: data };
 
     } catch (error: any) {
-        console.log(error);
         return { success: false };
     }
 }
@@ -57,7 +56,6 @@ async function sendGetRequest(endpoint: string, params: GetParam[]): Promise<Sta
         return { success: true, data: data };
 
     } catch (error: any) {
-        console.log(error)
         return { success: false };
     }
 }

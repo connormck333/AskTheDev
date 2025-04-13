@@ -124,7 +124,6 @@ export default function Input(props: InputProps): ReactElement {
     }
 
     function goToSignup(): void {
-        console.log("signing up")
         setScreen(ScreenType.REGISTER);
     }
 
