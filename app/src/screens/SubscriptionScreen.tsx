@@ -3,8 +3,34 @@ import { Status, User } from '../utils/interfaces';
 import { createCheckoutSession } from '../methods/payments/createCheckoutSession';
 import { logout } from '../methods/userManagement/logout';
 import GradientButton from '../components/GradientButton';
+import { subscribeFreeAccount } from '../methods/payments/subscribeFreeAccount';
+import SubscriptionType from '../utils/SubscriptionType';
+import Button from '../components/Button';
+import ScreenType from '../utils/ScreenType';
 
-const tiers = [
+interface Tier {
+    name: string;
+    id: string;
+    priceMonthly: string;
+    description: string;
+    features: string[];
+    featured: boolean;
+}
+
+const tiers: Tier[] = [
+    {
+        name: 'Free',
+        id: 'FREE',
+        priceMonthly: '£0.00',
+        description: "Test it out before you purchase!",
+        features: [
+            "3 prompts /day",
+            "Access to GPT-4o mini",
+            "Save previous responses",
+            "Use on any site"
+        ],
+        featured: false
+    },
     {
         name: 'Basic',
         id: 'BASIC',
@@ -16,7 +42,7 @@ const tiers = [
             "Save previous responses",
             "Use on any site"
         ],
-        featured: false
+        featured: true
     },
     {
         name: 'Pro',
@@ -32,23 +58,32 @@ const tiers = [
             "Save previous responses",
             "Use on any site"
         ],
-        featured: true,
+        featured: false,
     },
 ]
 
 interface SubscriptionScreenProps {
     user: User;
     setSignedIn: Function;
+    setUser: Function;
+    setScreen: Function;
 }
 
 export default function SubscriptionScreen(props: SubscriptionScreenProps) {
 
-    const { user, setSignedIn } = props;
+    const { user, setSignedIn, setUser, setScreen } = props;
     const [loading, setLoading] = useState<boolean>(false);
     const [logoutLoading, setLogoutLoading] = useState<boolean>(false);
 
-    async function startCheckout(tier: any): Promise<void> {
+    async function startCheckout(tier: Tier): Promise<void> {
         if (loading || logoutLoading) return;
+
+        if (tier.id === "FREE") {
+            if (user.subscriptionType === SubscriptionType.FREE) return;
+            registerFreeAccount();
+            return;
+        }
+
         setLoading(true);
 
         const response: Status = await createCheckoutSession(user.userId, tier.id);
@@ -65,6 +100,26 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
         }
 
         redirectToCheckout(response.data.url);
+    }
+
+    async function registerFreeAccount(): Promise<void> {
+        setLoading(true);
+
+        const response: Status = await subscribeFreeAccount(user.userId);
+
+        setLoading(false);
+
+        if (!response.success) {
+            alert(
+                response.errorMessage
+                ? response.errorMessage
+                : "There was an error subscribing. Please try again later."
+            );
+            return;
+        }
+
+        setUser(response.data);
+        setScreen(ScreenType.PROMPT);
     }
 
     async function logoutUser(): Promise<void> {
@@ -84,9 +139,14 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
         }
 
         setSignedIn(false);
+        setScreen(ScreenType.LOGIN);
     }
 
-    async function redirectToCheckout(url: string): Promise<void> {
+    function goBackToPromptScreen(): void {
+        setScreen(undefined);
+    }
+
+    function redirectToCheckout(url: string): void {
         window.open(url);
     }
 
@@ -122,13 +182,22 @@ export default function SubscriptionScreen(props: SubscriptionScreenProps) {
                         </ul>
                         <GradientButton
                             onClick={() => startCheckout(tier)}
-                            label={"Subscribe to " + tier.name}
+                            label={(user.subscriptionType === SubscriptionType.FREE && tier.id === "FREE") ? "Currently Active" : "Subscribe to " + tier.name}
                             loading={loading}
                         />
                     </div>
                 ))}
 
-                <div className="mt-6">
+                <div className="mt-6 flex flex-col">
+                    {
+                        user.subscriptionType === SubscriptionType.FREE &&
+                        <div className="mb-2">
+                            <Button
+                                onClick={goBackToPromptScreen}
+                                label="Go Back"
+                            />
+                        </div>
+                    }
                     <GradientButton
                         onClick={logoutUser}
                         label="Logout"

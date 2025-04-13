@@ -7,7 +7,7 @@ import SubscriptionType from "../utils/SubscriptionType";
 interface ModelSelectorProps {
     model: [Model, Function];
     models: Model[];
-    user: User;
+    user: User | undefined;
 }
 
 export default function ModelSelector(props: ModelSelectorProps): ReactElement {
@@ -17,6 +17,8 @@ export default function ModelSelector(props: ModelSelectorProps): ReactElement {
     const [isOpen, setIsOpen] = useState(false);
 
     function setSelectedModel(model: Model): void {
+        if (user === undefined) return;
+
         if (model.proFeature && user.subscriptionType != SubscriptionType.PRO) return;
         _setSelectedModel(model);
         setIsOpen(false);
@@ -44,12 +46,12 @@ export default function ModelSelector(props: ModelSelectorProps): ReactElement {
                                 key={model.name}
                                 onClick={() => setSelectedModel(model)}
                                 className={
-                                    (model.proFeature && user.subscriptionType != SubscriptionType.PRO)
+                                    (user === undefined || (model.proFeature && user.subscriptionType != SubscriptionType.PRO))
                                     ? "px-4 py-3 bg-gray-100 flex flex-col items-start"
                                     : "px-4 py-2 cursor-pointer hover:bg-gray-100 flex flex-col items-start"
                                 }
                             >
-                                <div className="font-semibold text-sm text-black">{ model.name }{ (model.proFeature && user.subscriptionType !== SubscriptionType.PRO) ? " (PRO)" : "" }</div>
+                                <div className="font-semibold text-sm text-black">{ model.name }{ (model.proFeature && user?.subscriptionType !== SubscriptionType.PRO) ? " (PRO)" : "" }</div>
                                 <div className="text-sm text-gray-600 text-left">{ model.description }</div>
                             </li>
                             ))}

@@ -99,7 +99,7 @@ public class PromptService {
         LocalDateTime startOfDay = LocalDateTime.now().with(LocalTime.MIN);
         List<Prompt> todayPrompts = promptRepository.findAllByUserIdAndCreatedAtToday(userId, startOfDay);
 
-        int permittedAmount = SubscriptionType.getPromptAmount(subscriptionType);
+        int permittedAmount = subscriptionType.getPromptAmount();
         if (todayPrompts != null && todayPrompts.size() >= permittedAmount) {
             throw new PromptLimitReachedException();
         }

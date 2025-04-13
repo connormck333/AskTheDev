@@ -1,5 +1,5 @@
 enum SubscriptionType {
-    BASIC, PRO
+    NONE, FREE, BASIC, PRO
 }
 
 export default SubscriptionType;

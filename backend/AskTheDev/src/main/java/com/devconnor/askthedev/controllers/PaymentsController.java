@@ -1,6 +1,8 @@
 package com.devconnor.askthedev.controllers;
 
 import com.devconnor.askthedev.controllers.request.PaymentRequest;
+import com.devconnor.askthedev.controllers.request.UserIDRequest;
+import com.devconnor.askthedev.controllers.response.ATDUserResponse;
 import com.devconnor.askthedev.controllers.response.ResponseUrl;
 import com.devconnor.askthedev.services.payments.StripeService;
 import com.stripe.model.Event;
@@ -41,5 +43,13 @@ public class PaymentsController {
     ) {
         String url = stripeService.createBillingPortalSession(userId);
         return ResponseEntity.ok(new ResponseUrl(url));
+    }
+
+    @PostMapping("/register-free-account")
+    public ResponseEntity<ATDUserResponse> registerFreeAccount(
+            @RequestBody UserIDRequest body
+    ) {
+        ATDUserResponse response = stripeService.createFreeAccount(body.getUserId());
+        return ResponseEntity.ok(response);
     }
 }

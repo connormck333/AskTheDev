@@ -7,12 +7,14 @@ import SubscriptionType from "../utils/SubscriptionType";
 import { summariseWebPage } from "../methods/prompts/summariseWebPage";
 import ScrollContainerContext from "../context/scrollContainerContext";
 import ModelSelector from "./ModelSelector";
+import ScreenType from "../utils/ScreenType";
 
 interface InputProps {
-    user: User,
-    chatStream: [Chat[], Dispatch<SetStateAction<Chat[]>>],
-    prompt: [string, Dispatch<SetStateAction<string>>],
-    loading: [boolean, Dispatch<SetStateAction<boolean>>]
+    user: User | undefined;
+    chatStream: [Chat[], Dispatch<SetStateAction<Chat[]>>];
+    prompt: [string, Dispatch<SetStateAction<string>>];
+    loading: [boolean, Dispatch<SetStateAction<boolean>>];
+    setScreen: Function;
 }
 
 const models: Model[] = [
@@ -23,7 +25,7 @@ const models: Model[] = [
 
 export default function Input(props: InputProps): ReactElement {
 
-    const { user } = props;
+    const { user, setScreen } = props;
     const [chatStream, setChatStream] = props.chatStream;
     const [prompt, setPrompt] =  props.prompt;
     const [loading, setLoading] = props.loading;
@@ -41,7 +43,7 @@ export default function Input(props: InputProps): ReactElement {
     }, [chatStream]);
 
     async function submitPrompt(): Promise<void> {
-        if (loading) return;
+        if (loading || user === undefined) return;
         if (prompt.length < 2) {
             alert("Please enter a question.");
             return;
@@ -72,8 +74,8 @@ export default function Input(props: InputProps): ReactElement {
     }
 
     async function summarisePage(): Promise<void> {
-        if (loading) return;
-        if (user.subscriptionType?.valueOf() === SubscriptionType.BASIC.valueOf()) {
+        if (loading || user === undefined) return;
+        if (user.subscriptionType !== SubscriptionType.PRO) {
             alert("Upgrade to Pro to access this feature.");
             return;
         }
@@ -119,6 +121,10 @@ export default function Input(props: InputProps): ReactElement {
             e.preventDefault();
             submitPrompt();
         }
+    }
+
+    function goToSignup(): void {
+        setScreen(ScreenType.REGISTER);
     }
 
     return (
@@ -179,10 +185,11 @@ export default function Input(props: InputProps): ReactElement {
                         onClick={summarisePage}
                         backgroundColor="#E4E4E4"
                         darkBackgroundColor="#1e5bb9"
+                        disabled={user === undefined}
                     />
                     <Button
-                        label="Submit"
-                        onClick={submitPrompt}
+                        label={user === undefined ? "Sign up for free" : "Submit"}
+                        onClick={user === undefined ? goToSignup : submitPrompt}
                         backgroundColor="#2b7fff"
                         fontColor="#FFF"
                     />

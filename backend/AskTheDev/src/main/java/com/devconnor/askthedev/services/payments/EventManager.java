@@ -1,5 +1,7 @@
 package com.devconnor.askthedev.services.payments;
 
+import com.devconnor.askthedev.controllers.response.ATDUserResponse;
+import com.devconnor.askthedev.exception.ATDException;
 import com.devconnor.askthedev.exception.CustomerNotFoundException;
 import com.devconnor.askthedev.exception.InvalidEventException;
 import com.devconnor.askthedev.exception.SubscriptionNotFoundException;
@@ -34,6 +36,23 @@ public class EventManager {
 
     private static final String ACTIVE = "active";
 
+    public ATDUserResponse createFreeAccount(UUID userId) {
+        ATDSubscription existingSubscription = subscriptionRepository.getSubscriptionByUserId(userId);
+        if (existingSubscription != null) {
+            throw new ATDException("User already has a subscription.");
+        }
+
+        existingSubscription = new ATDSubscription();
+        existingSubscription.setUserId(userId);
+        existingSubscription.setActive(true);
+        existingSubscription.setType(SubscriptionType.FREE);
+        existingSubscription.setStatus(ACTIVE);
+
+        subscriptionRepository.save(existingSubscription);
+
+        return userService.getATDUserResponseByUser(userId);
+    }
+
     public void handleSubscriptionCreation(Event event) {
         Subscription subscription = deserializeEvent(event, Subscription.class);
         String customerId = getCustomerIdFromSubscription(subscription);
@@ -44,7 +63,10 @@ public class EventManager {
             throw new CustomerNotFoundException();
         }
 
-        ATDSubscription atdSubscription = new ATDSubscription();
+        ATDSubscription atdSubscription = subscriptionRepository.getSubscriptionByUserId(user.getId());
+        if (atdSubscription == null) {
+            atdSubscription = new ATDSubscription();
+        }
         atdSubscription.setStripeSubscriptionId(subscription.getId());
         atdSubscription.setUserId(user.getId());
         atdSubscription.setType(subscriptionType);
@@ -81,7 +103,10 @@ public class EventManager {
             throw new SubscriptionNotFoundException();
         }
 
-        subscriptionRepository.deleteByStripeSubscriptionId(subscriptionId);
+        foundAtdSubscription.setType(SubscriptionType.FREE);
+        foundAtdSubscription.setStripeSubscriptionId(null);
+
+        subscriptionRepository.save(foundAtdSubscription);
     }
 
     public void handleSuccessfulPayment(Event event) {

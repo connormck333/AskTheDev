@@ -86,6 +86,11 @@ public class UserService {
         return response;
     }
 
+    public ATDUserResponse getATDUserResponseByUser(UUID userId) {
+        UserDTO user = getUserById(userId);
+        return getATDUserResponseByUser(user);
+    }
+
     private static UserDTO mapToDTO(User user) {
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());

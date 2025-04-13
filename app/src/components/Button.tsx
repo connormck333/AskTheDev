@@ -9,6 +9,7 @@ interface ButtonProps {
     darkFontColor?: string;
     fontColor?: string;
     loading?: boolean;
+    disabled?: boolean;
 }
 
 export default function Button(props: ButtonProps): ReactElement {
@@ -36,12 +37,13 @@ export default function Button(props: ButtonProps): ReactElement {
     return (
         <button
             onClick={props.onClick}
-            className="px-4 py-2 font-sans text-xs font-bold text-center text-gray-900 uppercase align-middle transition-all rounded-md select-none hover:bg-gray-900/10 active:bg-gray-900/20 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+            className="px-4 py-2 font-sans text-xs font-bold text-center text-gray-900 uppercase cursor-pointer align-middle transition-all rounded-md select-none hover:bg-gray-900/10 active:bg-gray-900/20 disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
             style={{
                 backgroundColor: getBackgroundColor(),
                 color: getFontColor()
             }}
             type="button"
+            disabled={props.disabled !== undefined ? props.disabled : false}
         >
             <Loading
                 loading={props.loading || false}
