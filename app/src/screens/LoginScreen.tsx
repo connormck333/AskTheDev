@@ -2,8 +2,9 @@ import { ReactElement, useState } from "react";
 import FormInput from "../components/FormInput";
 import Loading from "../components/Loading";
 import ScreenType from "../utils/ScreenType";
-import { Status } from "../utils/interfaces";
+import { Status, User } from "../utils/interfaces";
 import { login } from "../methods/userManagement/login";
+import SubscriptionType from "../utils/SubscriptionType";
 
 interface LoginScreenProps {
     setUser: Function;
@@ -39,9 +40,13 @@ export default function LoginScreen(props: LoginScreenProps): ReactElement {
             return;
         }
 
+        const userData: User = response.data;
+
         setUser({...response.data});
         setSignedIn(true);
-        setCurrentScreen(ScreenType.PROMPT);
+
+        const nextScreen: ScreenType = userData.subscriptionType !== SubscriptionType.NONE ? ScreenType.PROMPT : ScreenType.SUBSCRIPTION;
+        setCurrentScreen(nextScreen);
     }
 
     function register(): void {

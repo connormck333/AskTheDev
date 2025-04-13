@@ -52,7 +52,7 @@ public enum SubscriptionType {
 
     public int getPromptAmount() {
         return switch (this) {
-            case FREE -> 5;
+            case FREE -> 3;
             case BASIC -> 15;
             case PRO -> 50;
         };

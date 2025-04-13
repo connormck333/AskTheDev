@@ -22,7 +22,7 @@ const tiers: Tier[] = [
         name: 'Free',
         id: 'FREE',
         priceMonthly: '£0.00',
-        description: "Test it out before your purchase!",
+        description: "Test it out before you purchase!",
         features: [
             "3 prompts / day",
             "Access to GPT-4o mini",
@@ -42,7 +42,7 @@ const tiers: Tier[] = [
             "Save previous responses",
             "Use on any site"
         ],
-        featured: false
+        featured: true
     },
     {
         name: 'Pro',
@@ -58,7 +58,7 @@ const tiers: Tier[] = [
             "Save previous responses",
             "Use on any site"
         ],
-        featured: true,
+        featured: false,
     },
 ]
 
