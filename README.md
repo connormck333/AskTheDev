@@ -5,10 +5,19 @@ An AI Chrome Extension for developers. AskTheDev reads the HTML of the webpage w
 
 ## Setup
 1. Clone this repo.
-2. Create a .env file in the root directory of this project.
-3. Paste the following into .env: `VITE_OPENAI_API_KEY=<Your OpenAI api key>`.
-4. Install the dependencies: `npm install`.
-5. Run the following to create the build directory: `npm run build`. If you want to run a dev instance locally, enter: `npm run dev`.
-6. Go to Chrome and go to Extensions. Here you must enable "Developer mode".
-7. Click "Load Unpacked" and select the build folder.
-8. Pin the extension to your extension bar and ask away!
+2. Create a .env file in backend/AskTheDev/
+3. Add your OpenAI and Stripe keys. Create a key for JWT_SECRET_KEY:
+```
+OPENAI_API_KEY=
+OPENAI_PROJECT_ID=
+OPENAI_ORG_ID=
+STRIPE_API_KEY=
+STRIPE_ENDPOINT_SECRET=
+JWT_SECRET_KEY=
+```
+4. From backend/AskTheDev/ run ```mvn spring-boot:run```
+5. Change directory to app/
+6. Run ```npm run build```
+7. Run ```npm run dev```
+8. Open the localhost url printed to your terminal
+9. Sign up and prompt away!
