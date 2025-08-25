@@ -19,5 +19,7 @@ JWT_SECRET_KEY=
 5. Change directory to app/
 6. Run ```npm run build```
 7. Run ```npm run dev```
-8. Open the localhost url printed to your terminal
-9. Sign up and prompt away!
+8. To view as a webpage, open the localhost url printed to your terminal
+9. Alternatively, to view as a chrome extension, navigate to chrome://extensions/ and enable developer mode
+10. Click load unpacked and select the build directory in app/
+11. Sign up and prompt away!
